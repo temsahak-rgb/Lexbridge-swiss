@@ -1,15 +1,17 @@
 
 /**
  * LexBridge — Corporate Module Entry Point
- * Version: 0.7.0
+ * Version: 0.8.0
  *
  * Features:
+ * - Multilingual matter management (EN / FR / DE)
  * - Matter Wizard
  * - Independent report sections
  * - Paginated checklist
  * - Document Generator
  * - Non-destructive matter editing
  * - Compatible checklist status preservation
+ * - Language changes never regenerate workflows
  */
 
 "use strict";
@@ -42,6 +44,11 @@ import {
 import {
   updateStepStatus
 } from "../../js/core/workflow-engine.js";
+
+import {
+  t,
+  onLanguageChange
+} from "../../js/core/i18n.js";
 
 // ---------------------------------------------
 // HELPERS
@@ -78,7 +85,8 @@ function normalize(value) {
 
 function sameMatter(a, b) {
   return MATTER_FIELDS.every(
-    (field) => normalize(a?.[field]) ===
+    (field) =>
+      normalize(a?.[field]) ===
       normalize(b?.[field])
   );
 }
@@ -89,7 +97,8 @@ function sameLegalScope(a, b) {
     "canton",
     "operation"
   ].every(
-    (field) => normalize(a?.[field]) ===
+    (field) =>
+      normalize(a?.[field]) ===
       normalize(b?.[field])
   );
 }
@@ -108,28 +117,38 @@ function snapshotForm(form) {
 }
 
 function restoreForm(form, values) {
+  if (!values) return;
+
   for (const field of MATTER_FIELDS) {
     const control = Array.from(
       form.elements
     ).find((item) => item.name === field);
 
-    if (control && field in values) {
+    if (
+      control &&
+      Object.prototype.hasOwnProperty.call(
+        values,
+        field
+      )
+    ) {
       control.value = values[field];
     }
   }
 }
 
 /**
- * Reapply compatible review statuses.
+ * Preserve checklist statuses only when
+ * company type, canton and operation
+ * remain unchanged.
  *
- * This is allowed only when company type,
- * canton and operation are unchanged.
- *
- * Human review remains necessary.
+ * Step IDs are never translated.
  */
-function preserveChecklist(oldWorkflow, newWorkflow) {
+function preserveChecklist(
+  oldWorkflow,
+  newWorkflow
+) {
   const oldSteps = new Map(
-    oldWorkflow.steps.map(
+    (oldWorkflow.steps || []).map(
       (step) => [step.id, step]
     )
   );
@@ -143,8 +162,10 @@ function preserveChecklist(oldWorkflow, newWorkflow) {
     "not_applicable"
   ]);
 
-  for (const step of newWorkflow.steps) {
-    const previous = oldSteps.get(step.id);
+  for (const step of newWorkflow.steps || []) {
+    const previous = oldSteps.get(
+      step.id
+    );
 
     if (
       !previous ||
@@ -162,41 +183,49 @@ function preserveChecklist(oldWorkflow, newWorkflow) {
     preservedCount++;
   }
 
-  return { workflow, preservedCount };
+  return {
+    workflow,
+    preservedCount
+  };
 }
 
 // ---------------------------------------------
 // CORPORATE MODULE
 // ---------------------------------------------
 
-export async function mount(context, container) {
+export async function mount(
+  context,
+  container
+) {
   if (!(container instanceof HTMLElement)) {
     throw new Error(
       "Corporate module container is missing."
     );
   }
 
+  // -------------------------------------------
   // MATTER WIZARD
+  // -------------------------------------------
 
-  const matterPanel = el("section", null, "card");
+  const matterPanel = el(
+    "section",
+    null,
+    "card"
+  );
+
   matterPanel.style.marginTop = "24px";
 
-  const matterHeading = el(
-    "h2",
-    "New Corporate Matter"
-  );
+  const matterHeading = el("h2");
 
   const matterDescription = el(
     "p",
-    "Enter or edit the case information. " +
-    "Existing review progress will be retained " +
-    "where compatible.",
+    "",
     "card-description"
   );
 
   const cancelButton = el(
     "button",
-    "Cancel Editing",
+    "",
     "btn btn-secondary"
   );
 
@@ -204,11 +233,16 @@ export async function mount(context, container) {
   cancelButton.hidden = true;
   cancelButton.style.marginBottom = "18px";
 
-  const { form, submitButton } =
-    createCorporateForm();
+  const {
+    form,
+    submitButton
+  } = createCorporateForm();
 
-  const matterWizard =
-    createMatterWizard(form, submitButton);
+  // Existing wizard stays mounted.
+  createMatterWizard(
+    form,
+    submitButton
+  );
 
   matterPanel.append(
     matterHeading,
@@ -217,18 +251,25 @@ export async function mount(context, container) {
     form
   );
 
+  // -------------------------------------------
   // REPORT CONTROLLER
+  // -------------------------------------------
 
   const reportHost = el("div");
   reportHost.hidden = true;
 
   const reportController =
-    createReportController(context, reportHost);
+    createReportController(
+      context,
+      reportHost
+    );
 
   const reportSections =
     reportController.getSections();
 
+  // -------------------------------------------
   // DOCUMENT CONTROLLER
+  // -------------------------------------------
 
   const documentContainer = el("section");
   documentContainer.hidden = true;
@@ -240,7 +281,9 @@ export async function mount(context, container) {
       null
     );
 
+  // -------------------------------------------
   // SECTION NAVIGATION
+  // -------------------------------------------
 
   const sectionNavigator =
     createCorporateSections();
@@ -270,7 +313,9 @@ export async function mount(context, container) {
     false
   );
 
+  // -------------------------------------------
   // REPORT WORKSPACE
+  // -------------------------------------------
 
   const workspace = el(
     "section",
@@ -287,21 +332,17 @@ export async function mount(context, container) {
     "lb-page-header"
   );
 
-  const workspaceTitle = el(
-    "h2",
-    "Corporate Matter"
-  );
+  const workspaceTitle = el("h2");
 
   const workspaceDescription = el(
     "p",
-    "Review your workflow, legal considerations, " +
-    "official sources and documents.",
+    "",
     "card-description"
   );
 
   const editButton = el(
     "button",
-    "Edit Matter Details",
+    "",
     "btn btn-secondary"
   );
 
@@ -319,15 +360,75 @@ export async function mount(context, container) {
     sectionNavigator.element
   );
 
-  // EDITING STATE
+  // -------------------------------------------
+  // STATE
+  // -------------------------------------------
 
   let savedFormValues = null;
   let savedMatter = null;
 
+  let isEditing = false;
+  let isSubmitting = false;
+
+  // -------------------------------------------
+  // LIVE TRANSLATION
+  // -------------------------------------------
+
+  /**
+   * Translate only the elements owned
+   * by this module.
+   *
+   * Do not recreate the form, wizard,
+   * workflow, checklist or documents.
+   */
+  function updateTranslations() {
+    matterHeading.textContent =
+      isEditing
+        ? t("corporate.editMatter")
+        : t("corporate.newMatter");
+
+    matterDescription.textContent =
+      t("corporate.matterEditDescription");
+
+    cancelButton.textContent =
+      t("corporate.cancelEditing");
+
+    workspaceTitle.textContent =
+      savedMatter?.companyName ||
+      t("corporate.matterTitle");
+
+    workspaceDescription.textContent =
+      t("corporate.reviewDescription");
+
+    editButton.textContent =
+      t("corporate.editMatterDetails");
+
+    // The form.js translation listener
+    // updates ordinary submit labels.
+    // Here we only manage the busy state.
+    if (isSubmitting) {
+      submitButton.textContent =
+        t("corporate.updatingWorkflow");
+    }
+  }
+
+  const unsubscribeLanguage =
+    onLanguageChange(
+      updateTranslations
+    );
+
+  // -------------------------------------------
+  // NAVIGATION BETWEEN EDIT / REPORT
+  // -------------------------------------------
+
   function showWorkspace() {
+    isEditing = false;
+
     matterPanel.hidden = true;
     workspace.hidden = false;
     cancelButton.hidden = true;
+
+    updateTranslations();
 
     workspace.scrollIntoView({
       behavior: "smooth",
@@ -335,36 +436,54 @@ export async function mount(context, container) {
     });
   }
 
-  editButton.addEventListener("click", () => {
+  function showMatterEditor() {
     savedFormValues = snapshotForm(form);
 
-    matterHeading.textContent =
-      "Edit Corporate Matter";
+    isEditing = true;
 
     cancelButton.hidden = false;
     workspace.hidden = true;
     matterPanel.hidden = false;
 
+    updateTranslations();
+
     matterPanel.scrollIntoView({
       behavior: "smooth",
       block: "start"
     });
-  });
+  }
 
-  cancelButton.addEventListener("click", () => {
-    if (savedFormValues) {
-      restoreForm(form, savedFormValues);
+  editButton.addEventListener(
+    "click",
+    showMatterEditor
+  );
+
+  cancelButton.addEventListener(
+    "click",
+    () => {
+      if (isSubmitting) return;
+
+      restoreForm(
+        form,
+        savedFormValues
+      );
+
+      showWorkspace();
     }
+  );
 
-    showWorkspace();
-  });
-
+  // -------------------------------------------
   // WORKFLOW SUBMISSION
+  // -------------------------------------------
 
   form.addEventListener(
     "submit",
     async (event) => {
       event.preventDefault();
+
+      if (isSubmitting) {
+        return;
+      }
 
       const previousWorkflow =
         reportController.getWorkflow();
@@ -381,8 +500,10 @@ export async function mount(context, container) {
         return;
       }
 
-      // No changes: keep the existing workflow
-      // and every checklist status untouched.
+      // ---------------------------------------
+      // UNCHANGED MATTER
+      // ---------------------------------------
+
       if (
         previousWorkflow &&
         savedMatter &&
@@ -391,50 +512,69 @@ export async function mount(context, container) {
         showWorkspace();
 
         context.setStatus(
-          "No changes detected. Existing review retained.",
+          t("corporate.noChanges"),
           "success"
         );
 
         return;
       }
 
+      // ---------------------------------------
+      // LEGAL SCOPE COMPATIBILITY
+      // ---------------------------------------
+
       const compatible = Boolean(
         previousWorkflow &&
         savedMatter &&
-        sameLegalScope(savedMatter, matter)
+        sameLegalScope(
+          savedMatter,
+          matter
+        )
       );
 
-      // A different legal scope requires
-      // a fresh review.
+      // Different legal scope means that
+      // checklist statuses cannot be reused.
       if (
         previousWorkflow &&
         !compatible
       ) {
-        const approved = window.confirm(
-          "Company type, canton or operation has changed.\n\n" +
-          "A new legal workflow will be generated and " +
-          "previous checklist statuses will not be reused.\n\n" +
-          "Continue? The existing report will remain " +
-          "available if you cancel."
-        );
+        const message =
+          t("validation.confirmScopeChange") +
+          "\n\n" +
+          t("validation.confirmScopeChangeAction");
+
+        const approved =
+          window.confirm(message);
 
         if (!approved) {
           return;
         }
       }
 
+      // ---------------------------------------
+      // START GENERATION
+      // ---------------------------------------
+
+      isSubmitting = true;
+
       submitButton.disabled = true;
+      cancelButton.disabled = true;
+
       submitButton.textContent =
-        "Updating workflow...";
+        t("corporate.updatingWorkflow");
 
       try {
         let nextWorkflow =
-          await createCorporateWorkflow(matter);
+          await createCorporateWorkflow(
+            matter
+          );
 
         let preservedCount = 0;
 
-        // Reuse matching checklist statuses
-        // if legal scope is unchanged.
+        // -------------------------------------
+        // PRESERVE COMPATIBLE REVIEW STATUS
+        // -------------------------------------
+
         if (compatible) {
           const result = preserveChecklist(
             previousWorkflow,
@@ -442,10 +582,12 @@ export async function mount(context, container) {
           );
 
           nextWorkflow = result.workflow;
-          preservedCount = result.preservedCount;
 
-          // Explicitly flag information changes
-          // requiring renewed human verification.
+          preservedCount =
+            result.preservedCount;
+
+          // A changed matter must still
+          // receive human legal verification.
           const warnings = Array.isArray(
             nextWorkflow.warnings
           )
@@ -453,26 +595,32 @@ export async function mount(context, container) {
             : [];
 
           warnings.push(
-            "Matter details were edited. " +
-            "Compatible checklist statuses were carried " +
-            "forward, but previously reviewed items " +
-            "must be rechecked against the updated facts."
+            t("workflow.reviewNeedsChecking")
           );
 
           nextWorkflow.warnings = warnings;
         }
 
-        // Commit only after successful generation.
+        // -------------------------------------
+        // COMMIT SUCCESSFUL GENERATION
+        // -------------------------------------
+
         reportController.setWorkflow(
           nextWorkflow
         );
 
-        // Invalidate drafts linked to earlier facts.
+        // Existing drafts may refer to old
+        // facts. Invalidate those drafts.
         documentController.clear();
-        documentController.updateMatter(matter);
+
+        documentController.updateMatter(
+          matter
+        );
 
         savedMatter = { ...matter };
-        savedFormValues = snapshotForm(form);
+        savedFormValues = snapshotForm(
+          form
+        );
 
         sectionNavigator.setSectionEnabled(
           "documents",
@@ -480,23 +628,31 @@ export async function mount(context, container) {
         );
 
         sectionNavigator.reset();
-        sectionNavigator.showSection("workflow");
 
-        workspaceTitle.textContent =
-          matter.companyName || "Corporate Matter";
-
-        matterHeading.textContent =
-          "Edit Corporate Matter";
+        sectionNavigator.showSection(
+          "workflow"
+        );
 
         showWorkspace();
 
-        context.setStatus(
-          preservedCount > 0
-            ? `${preservedCount} review statuses preserved. ` +
-              "Recheck them against the updated information."
-            : "Corporate workflow generated successfully.",
-          preservedCount > 0 ? "warning" : "success"
-        );
+        // -------------------------------------
+        // LOCALIZED STATUS MESSAGE
+        // -------------------------------------
+
+        if (preservedCount > 0) {
+          context.setStatus(
+            `${preservedCount} — ` +
+            t("workflow.reviewRetained") +
+            " " +
+            t("workflow.reviewNeedsChecking"),
+            "warning"
+          );
+        } else {
+          context.setStatus(
+            t("workflow.generated"),
+            "success"
+          );
+        }
 
       } catch (error) {
         context.reportError(
@@ -505,23 +661,35 @@ export async function mount(context, container) {
         );
 
         context.setStatus(
-          "Workflow update failed. " +
-          "The previous report has been retained.",
+          t("status.updateFailed"),
           "error"
         );
 
       } finally {
+        isSubmitting = false;
+
         submitButton.disabled = false;
+        cancelButton.disabled = false;
+
         submitButton.textContent =
-          "Generate legal workflow";
+          t("corporate.generateWorkflow");
       }
     }
   );
 
+  // -------------------------------------------
   // INITIAL MOUNT
+  // -------------------------------------------
 
   container.replaceChildren(
     matterPanel,
     workspace
   );
+
+  updateTranslations();
+
+  // Keep a reference to the unsubscribe
+  // callback for future module lifecycle work.
+  // It does not affect the current module API.
+  void unsubscribeLanguage;
 }
