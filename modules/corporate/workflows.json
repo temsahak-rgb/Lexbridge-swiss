@@ -1,0 +1,220 @@
+
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "0.1.0",
+  "module": "corporate",
+  "jurisdiction": "CH",
+  "status": "preliminary",
+  "requiredFields": [
+    "companyName",
+    "personName",
+    "companyType",
+    "canton",
+    "operation"
+  ],
+  "shared": {
+    "steps": [
+      {
+        "id": "verify-company",
+        "title": "Verify company registration",
+        "description": "Check the company identity, legal form and current commercial register extract.",
+        "required": true,
+        "sourceIds": ["CH-ZEFIX"]
+      },
+      {
+        "id": "review-articles",
+        "title": "Review articles of association",
+        "description": "Identify any relevant company-specific rules on corporate decisions and representation.",
+        "required": true,
+        "sourceIds": ["CH-CO"]
+      },
+      {
+        "id": "identify-authority",
+        "title": "Identify the competent corporate body",
+        "description": "Determine who has authority to decide the proposed change.",
+        "required": true,
+        "sourceIds": ["CH-CO"]
+      },
+      {
+        "id": "verify-evidence",
+        "title": "Review supporting evidence",
+        "description": "Check the decision record and supporting documents appropriate to the change.",
+        "required": true,
+        "sourceIds": ["CH-ORC"]
+      },
+      {
+        "id": "check-representation",
+        "title": "Check company representation",
+        "description": "Verify continuing representation arrangements and relevant signing powers.",
+        "required": true,
+        "sourceIds": ["CH-CO"]
+      },
+      {
+        "id": "prepare-filing",
+        "title": "Prepare commercial register application",
+        "description": "Identify the competent registry and prepare an initial filing checklist.",
+        "required": true,
+        "sourceIds": ["CH-ORC"]
+      },
+      {
+        "id": "human-review",
+        "title": "Obtain legal review",
+        "description": "Have the proposed documents and filing requirements reviewed before submission.",
+        "required": true,
+        "sourceIds": []
+      }
+    ],
+    "warnings": [
+      "This workflow is preliminary and does not constitute legal advice.",
+      "Check the current legislation and official cantonal registry instructions.",
+      "The company's articles of association and the facts of the matter may change the procedure.",
+      "No documents are automatically filed or legally approved."
+    ]
+  },
+  "operations": {
+    "appoint": {
+      "id": "corporate-appoint",
+      "title": "Appointment of a director or manager",
+      "steps": [
+        {
+          "id": "appointment-decision",
+          "title": "Review appointment decision",
+          "description": "Check the decision record and whether the competent corporate body made the appointment.",
+          "required": true,
+          "sourceIds": ["CH-CO"]
+        },
+        {
+          "id": "acceptance",
+          "title": "Check acceptance of office",
+          "description": "Identify whether and how acceptance of the appointment must be documented.",
+          "required": true,
+          "sourceIds": ["CH-ORC"]
+        },
+        {
+          "id": "identity-signature",
+          "title": "Check identity and signature documents",
+          "description": "Determine identity and certified specimen-signature requirements where applicable.",
+          "required": true,
+          "sourceIds": ["CH-ORC"]
+        },
+        {
+          "id": "appointment-powers",
+          "title": "Review associated signing authority",
+          "description": "Determine whether the appointment also changes the company's registered signing powers.",
+          "required": true,
+          "sourceIds": ["CH-CO"]
+        }
+      ],
+      "warnings": [
+        "Appointment to an operational management position is not necessarily appointment to a registered corporate body."
+      ]
+    },
+    "remove": {
+      "id": "corporate-remove",
+      "title": "Removal or resignation",
+      "steps": [
+        {
+          "id": "departure-basis",
+          "title": "Determine basis of departure",
+          "description": "Distinguish resignation, removal and other forms of termination of office.",
+          "required": true,
+          "sourceIds": ["CH-CO"]
+        },
+        {
+          "id": "departure-evidence",
+          "title": "Review departure documents",
+          "description": "Check relevant resignation evidence or the decision of the competent corporate body.",
+          "required": true,
+          "sourceIds": ["CH-CO", "CH-ORC"]
+        },
+        {
+          "id": "cancel-signature",
+          "title": "Review cancellation of signing authority",
+          "description": "Check whether registered signing rights must also be removed or amended.",
+          "required": true,
+          "sourceIds": ["CH-ORC"]
+        },
+        {
+          "id": "remaining-management",
+          "title": "Check remaining management structure",
+          "description": "Verify continuing corporate organisation and representation following the departure.",
+          "required": true,
+          "sourceIds": ["CH-CO"]
+        }
+      ],
+      "warnings": [
+        "Resignation and removal may require different supporting evidence.",
+        "Changes to employment relationships are outside the scope of this workflow."
+      ]
+    },
+    "signature": {
+      "id": "corporate-signature",
+      "title": "Change of signing authority",
+      "steps": [
+        {
+          "id": "current-signature",
+          "title": "Verify existing registered authority",
+          "description": "Review existing registered signatories and their signing arrangements.",
+          "required": true,
+          "sourceIds": ["CH-ZEFIX"]
+        },
+        {
+          "id": "signature-decision",
+          "title": "Review authority for the change",
+          "description": "Determine the competent corporate body and supporting decision required.",
+          "required": true,
+          "sourceIds": ["CH-CO"]
+        },
+        {
+          "id": "signature-mode",
+          "title": "Identify proposed signing mode",
+          "description": "Check the intended individual or collective signing authority, as applicable.",
+          "required": true,
+          "sourceIds": ["CH-ORC"]
+        },
+        {
+          "id": "new-signatory-docs",
+          "title": "Check new signatory documentation",
+          "description": "Determine whether identification and signature certification are needed.",
+          "required": true,
+          "sourceIds": ["CH-ORC"]
+        }
+      ],
+      "warnings": [
+        "A change in signing authority does not necessarily involve an appointment or removal from a corporate body."
+      ]
+    }
+  },
+  "companyTypes": {
+    "SA": {
+      "label": "Société anonyme / Aktiengesellschaft",
+      "steps": [
+        {
+          "id": "sa-board-structure",
+          "title": "Check board structure",
+          "description": "Review the board composition and internal responsibilities under the applicable corporate rules.",
+          "required": true,
+          "sourceIds": ["CH-CO"]
+        }
+      ],
+      "warnings": [
+        "Distinguish election of a board member from delegation of operational management."
+      ]
+    },
+    "SARL": {
+      "label": "Société à responsabilité limitée / GmbH",
+      "steps": [
+        {
+          "id": "sarl-management-structure",
+          "title": "Check management arrangements",
+          "description": "Review the management structure, members' decision-making powers and articles of association.",
+          "required": true,
+          "sourceIds": ["CH-CO"]
+        }
+      ],
+      "warnings": [
+        "The applicable management arrangements may differ from those of a Swiss corporation."
+      ]
+    }
+  }
+}
