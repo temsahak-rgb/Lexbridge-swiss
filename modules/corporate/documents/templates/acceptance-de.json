@@ -1,0 +1,46 @@
+
+{
+  "id": "CH-CORPORATE-ACCEPTANCE-DE",
+  "version": "0.1.0",
+  "schemaVersion": "1.0",
+  "documentType": "mandate_acceptance",
+  "jurisdiction": "CH",
+  "language": "de",
+  "status": "preliminary",
+  "title": "Annahmeerklärung — {{companyName}}",
+  "description": "Entwurf einer Erklärung über die Annahme eines Mandats in einer schweizerischen Gesellschaft.",
+  "appliesTo": {
+    "companyTypes": ["SA", "SARL"],
+    "operations": ["appoint"],
+    "cantons": ["VD", "GE", "ZH", "BS"]
+  },
+  "requiredFields": [
+    "companyName",
+    "personName",
+    "roleName",
+    "appointmentDate",
+    "city",
+    "documentDate"
+  ],
+  "content": "ANNAHMEERKLÄRUNG\n\nGesellschaft: {{companyName}}\n\nHiermit erkläre ich, {{personName}}, dass ich die Wahl bzw. Ernennung als {{roleName}} der Gesellschaft {{companyName}} gemäss dem Beschluss vom {{appointmentDate}} annehme.\n\nDiese Erklärung dient der Bestätigung meiner Annahme des genannten Mandats und kann, soweit erforderlich, als Beleg im Zusammenhang mit der Anmeldung beim zuständigen Handelsregisteramt verwendet werden.\n\nOrt: {{city}}\nDatum: {{documentDate}}\n\nUnterschrift: ______________________________\n\n{{personName}}",
+  "sourceIds": [
+    "CH-CO",
+    "CH-ORC",
+    "VD-SA-MOD",
+    "GE-MODIFICATION",
+    "ZH-AG-BOARD",
+    "ZH-GMBH-MGMT",
+    "BS-PERSONNEL"
+  ],
+  "reviewRequirements": [
+    "Vollständigen Namen der betroffenen Person prüfen.",
+    "Genaue Organstellung oder Funktion überprüfen.",
+    "Rechtsgültigkeit des Wahl- oder Ernennungsbeschlusses prüfen.",
+    "Datum des Beschlusses mit den Belegen abgleichen.",
+    "Anforderungen des zuständigen Handelsregisteramts prüfen.",
+    "Abklären, ob eine separate Annahmeerklärung erforderlich ist.",
+    "Formvorschriften und allfällige Beglaubigung der Unterschrift prüfen.",
+    "Dokument vor der Verwendung rechtlich überprüfen lassen."
+  ],
+  "legalNotice": "Unverbindlicher Entwurf. Keine Garantie der Eintragungsfähigkeit. Vor der Unterzeichnung oder Einreichung müssen die Anforderungen des zuständigen Handelsregisteramts geprüft werden."
+}
