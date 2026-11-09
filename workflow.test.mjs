@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {evaluate,cantons} from '../src/workflow.js';
+const base={companyType:'AG',canton:'ZH',changeType:'appoint',companyName:'Example AG',personName:'Sample Person',competentBodyConfirmed:true};
+test('four cantons enabled',()=>assert.deepEqual(Object.keys(cantons).sort(),['BS','GE','VD','ZH']));
+test('appointment checklist has source and human safeguards',()=>{const r=evaluate(base);assert.ok(r.documents.some(d=>d.id==='acceptance'));assert.equal(r.status,'DRAFT — NOT VALIDATED');assert.match(r.cantonalSource.url,/zh.ch/);});
+test('missing facts flagged',()=>{const r=evaluate({...base,competentBodyConfirmed:false,personName:''});assert.ok(r.missing.length>=2);});
+test('signature changes need signing authority info',()=>{const r=evaluate({...base,changeType:'signature'});assert.ok(r.missing.some(x=>x.includes('Signature arrangement')));});
+test('GmbH distinguish organ from AG',()=>{const r=evaluate({...base,companyType:'GmbH'});assert.ok(r.flags.some(x=>x.includes('GmbH')));});
+test('reject unsupported canton',()=>assert.throws(()=>evaluate({...base,canton:'TI'})));
