@@ -1,0 +1,153 @@
+
+{
+  "schemaVersion": "1.0",
+  "jurisdiction": "CH",
+  "level": "federal",
+  "datasetVersion": "0.1.0",
+  "lastReviewed": "2026-11-09",
+  "status": "preliminary",
+  "disclaimer": "Legal source metadata for a prototype. Article applicability and current wording must be checked before legal use.",
+  "legislation": [
+    {
+      "id": "CH-CO",
+      "srNumber": "220",
+      "title": {
+        "fr": "Code des obligations",
+        "de": "Obligationenrecht",
+        "en": "Swiss Code of Obligations"
+      },
+      "shortName": "CO / OR",
+      "type": "federal_act",
+      "officialUrl": "https://www.fedlex.admin.ch/eli/cc/27/317_321_377/fr",
+      "articles": [
+        {
+          "id": "CH-CO-698",
+          "number": "698",
+          "topic": "General meeting competencies",
+          "appliesTo": ["SA"],
+          "operations": ["appoint", "remove"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-705",
+          "number": "705",
+          "topic": "Removal of board members",
+          "appliesTo": ["SA"],
+          "operations": ["remove"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-707",
+          "number": "707",
+          "topic": "Election and composition of the board",
+          "appliesTo": ["SA"],
+          "operations": ["appoint"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-712",
+          "number": "712",
+          "topic": "Constitution of the board",
+          "appliesTo": ["SA"],
+          "operations": ["appoint"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-716A",
+          "number": "716a",
+          "topic": "Non-transferable duties of the board",
+          "appliesTo": ["SA"],
+          "operations": ["appoint", "remove", "signature"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-716B",
+          "number": "716b",
+          "topic": "Delegation of management",
+          "appliesTo": ["SA"],
+          "operations": ["appoint", "remove"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-718",
+          "number": "718",
+          "topic": "Company representation",
+          "appliesTo": ["SA"],
+          "operations": ["appoint", "remove", "signature"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-720",
+          "number": "720",
+          "topic": "Registration of persons authorised to represent the company",
+          "appliesTo": ["SA"],
+          "operations": ["appoint", "remove", "signature"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-804",
+          "number": "804",
+          "topic": "Powers of the members' meeting",
+          "appliesTo": ["SARL"],
+          "operations": ["appoint", "remove"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-809",
+          "number": "809",
+          "topic": "Appointment and organisation of management",
+          "appliesTo": ["SARL"],
+          "operations": ["appoint", "remove"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-814",
+          "number": "814",
+          "topic": "Representation of the limited liability company",
+          "appliesTo": ["SARL"],
+          "operations": ["appoint", "remove", "signature"],
+          "verificationStatus": "preliminary"
+        },
+        {
+          "id": "CH-CO-815",
+          "number": "815",
+          "topic": "Removal of managers and withdrawal of representative authority",
+          "appliesTo": ["SARL"],
+          "operations": ["remove", "signature"],
+          "verificationStatus": "preliminary"
+        }
+      ]
+    },
+    {
+      "id": "CH-ORC",
+      "srNumber": "221.411",
+      "title": {
+        "fr": "Ordonnance sur le registre du commerce",
+        "de": "Handelsregisterverordnung",
+        "en": "Commercial Register Ordinance"
+      },
+      "shortName": "ORC / HRegV",
+      "type": "federal_ordinance",
+      "officialUrl": "https://www.fedlex.admin.ch/eli/cc/2007/686/fr",
+      "currentVersionEffectiveFrom": "2026-10-01",
+      "coverage": [
+        "Commercial register applications",
+        "Supporting documents",
+        "Identification and signatures",
+        "Entries and amendments",
+        "Publication and registration procedures"
+      ],
+      "articles": [],
+      "verificationStatus": "preliminary"
+    }
+  ],
+  "officialRegisters": [
+    {
+      "id": "CH-ZEFIX",
+      "title": "Central Business Name Index",
+      "shortName": "Zefix",
+      "officialUrl": "https://www.zefix.ch",
+      "purpose": "Check company registration information and identify the competent commercial register."
+    }
+  ]
+}
