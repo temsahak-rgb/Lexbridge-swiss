@@ -1,15 +1,35 @@
 
 /**
  * LexBridge — Application Shell
- * Version: 0.1.0
+ * Version: 0.2.0
  *
- * Creates an accessible sidebar and workspace.
+ * Features:
+ * - Consistent left sidebar
+ * - Dashboard and Corporate workspace
+ * - English, French and German interface
+ * - Language selector in the sidebar
+ * - Preserves existing module state
+ * - Accessible navigation
  *
- * Does not load legal modules or generate workflows.
- * Existing application logic remains independent.
+ * Framework-free ES module.
+ * Compatible with GitHub Pages.
  */
 
 "use strict";
+
+import {
+  initializeI18n,
+  onLanguageChange,
+  t
+} from "./i18n.js";
+
+import {
+  createLanguageSwitcher
+} from "./language-switcher.js";
+
+// ---------------------------------------------
+// DOM UTILITIES
+// ---------------------------------------------
 
 function el(tag, text, className = "") {
   const node = document.createElement(tag);
@@ -25,8 +45,35 @@ function el(tag, text, className = "") {
   return node;
 }
 
+// ---------------------------------------------
+// ERROR REPORTING
+// ---------------------------------------------
+
+function reportShellError(error, context) {
+  console.error(
+    "[LexBridge: " + context + "]",
+    error
+  );
+
+  if (
+    typeof window.LexBridgeReportError ===
+    "function"
+  ) {
+    window.LexBridgeReportError(
+      context + ": " +
+      (error instanceof Error
+        ? error.message
+        : String(error))
+    );
+  }
+}
+
+// ---------------------------------------------
+// SIDEBAR NAVIGATION BUTTON
+// ---------------------------------------------
+
 function createNavButton({
-  label,
+  translationKey,
   icon,
   page,
   disabled = false
@@ -47,23 +94,57 @@ function createNavButton({
     "lb-nav-icon"
   );
 
-  iconNode.setAttribute("aria-hidden", "true");
+  iconNode.setAttribute(
+    "aria-hidden",
+    "true"
+  );
 
-  const labelNode = el("span", label);
+  const labelNode = el(
+    "span",
+    t(translationKey)
+  );
+
+  const note = disabled
+    ? el(
+        "span",
+        t("navigation.comingSoon"),
+        "lb-nav-note"
+      )
+    : null;
 
   button.append(iconNode, labelNode);
 
-  if (disabled) {
-    const note = el(
-      "span",
-      "Soon",
-      "lb-nav-note"
-    );
+  if (note) {
     button.appendChild(note);
   }
 
-  return button;
+  function updateTranslation() {
+    const label = t(translationKey);
+
+    labelNode.textContent = label;
+
+    button.setAttribute(
+      "aria-label",
+      label
+    );
+
+    if (note) {
+      note.textContent =
+        t("navigation.comingSoon");
+    }
+  }
+
+  updateTranslation();
+
+  return {
+    element: button,
+    updateTranslation
+  };
 }
+
+// ---------------------------------------------
+// DASHBOARD
+// ---------------------------------------------
 
 function createDashboard(onNavigate) {
   const dashboard = el(
@@ -78,20 +159,31 @@ function createDashboard(onNavigate) {
     "lb-page-header"
   );
 
-  header.append(
-    el("p", "WELCOME", "lb-eyebrow"),
-    el(
-      "h1",
-      "Legal Workspace",
-      "lb-page-title"
-    ),
-    el(
-      "p",
-      "Access your legal workflows and " +
-      "prepare preliminary corporate documents.",
-      "lb-page-description"
-    )
+  const eyebrow = el(
+    "p",
+    "",
+    "lb-eyebrow"
   );
+
+  const title = el(
+    "h1",
+    "",
+    "lb-page-title"
+  );
+
+  const description = el(
+    "p",
+    "",
+    "lb-page-description"
+  );
+
+  header.append(
+    eyebrow,
+    title,
+    description
+  );
+
+  // Dashboard cards
 
   const grid = el(
     "div",
@@ -105,83 +197,142 @@ function createDashboard(onNavigate) {
     "lb-dashboard-card"
   );
 
-  corporateCard.append(
-    el("h3", "Corporate Governance"),
-    el(
-      "p",
-      "Prepare Swiss corporate registry " +
-      "checklists and document drafts."
-    )
-  );
+  const corporateTitle = el("h3");
+
+  const corporateDescription = el("p");
 
   const openButton = el(
     "button",
-    "Open Corporate Workspace",
+    "",
     "btn btn-primary"
   );
 
   openButton.type = "button";
 
-  openButton.addEventListener("click", () => {
-    onNavigate("corporate");
-  });
+  openButton.addEventListener(
+    "click",
+    () => onNavigate("corporate")
+  );
 
-  corporateCard.appendChild(openButton);
+  corporateCard.append(
+    corporateTitle,
+    corporateDescription,
+    openButton
+  );
 
-  const noticeCard = el(
+  // Future modules card
+
+  const futureCard = el(
     "article",
     null,
     "lb-dashboard-card"
   );
 
-  noticeCard.append(
-    el("h3", "More modules"),
-    el(
-      "p",
-      "Contracts and Compliance are planned " +
-      "for future releases."
-    )
+  const futureTitle = el("h3");
+
+  const futureDescription = el("p");
+
+  futureCard.append(
+    futureTitle,
+    futureDescription
   );
 
-  grid.append(corporateCard, noticeCard);
+  grid.append(
+    corporateCard,
+    futureCard
+  );
+
+  // Disclaimer
 
   const disclaimer = el(
     "p",
-    "LexBridge is a preliminary legal workflow " +
-    "support tool. Its output requires human review.",
+    "",
     "lb-help-text"
   );
 
   disclaimer.style.marginTop = "24px";
 
-  dashboard.append(header, grid, disclaimer);
+  dashboard.append(
+    header,
+    grid,
+    disclaimer
+  );
 
-  return dashboard;
+  function updateTranslations() {
+    eyebrow.textContent =
+      t("dashboard.eyebrow");
+
+    title.textContent =
+      t("dashboard.title");
+
+    description.textContent =
+      t("dashboard.description");
+
+    corporateTitle.textContent =
+      t("dashboard.corporateTitle");
+
+    corporateDescription.textContent =
+      t("dashboard.corporateDescription");
+
+    openButton.textContent =
+      t("dashboard.openCorporate");
+
+    futureTitle.textContent =
+      t("dashboard.moreModulesTitle");
+
+    futureDescription.textContent =
+      t("dashboard.moreModulesDescription");
+
+    disclaimer.textContent =
+      t("dashboard.disclaimer");
+  }
+
+  updateTranslations();
+
+  return {
+    element: dashboard,
+    updateTranslations
+  };
 }
 
+// ---------------------------------------------
+// APPLICATION SHELL
+// ---------------------------------------------
+
 /**
- * Create the main application workspace.
+ * Create the LexBridge workspace.
  *
- * @param {HTMLElement} host Root container.
+ * @param {HTMLElement} host
  *
- * @returns {Object}
- *  - moduleContainer: mount existing modules here
- *  - navigate(page): change active page
- *  - showCorporate(): display corporate workspace
- *  - destroy(): remove shell
+ * Returns:
+ * - moduleContainer
+ * - navigate(page)
+ * - showCorporate()
+ * - getActivePage()
+ * - destroy()
  */
 export function createAppShell(host) {
   if (!(host instanceof HTMLElement)) {
     throw new Error(
-      "A valid application host element is required."
+      "A valid application host is required."
     );
   }
 
-  const shell = el("div", null, "lb-shell");
+  let destroyed = false;
 
-  // -------------------------------------
+  // -------------------------------------------
+  // ROOT SHELL
+  // -------------------------------------------
+
+  const shell = el(
+    "div",
+    null,
+    "lb-shell"
+  );
+
+  // -------------------------------------------
   // SIDEBAR
-  // -------------------------------------
+  // -------------------------------------------
 
   const sidebar = el(
     "aside",
@@ -195,14 +346,26 @@ export function createAppShell(host) {
     "lb-brand"
   );
 
-  brand.append(
-    el("h2", "LexBridge", "lb-brand-name"),
-    el(
-      "p",
-      "Swiss Legal Workspace",
-      "lb-brand-caption"
-    )
+  const brandName = el(
+    "h2",
+    "LexBridge",
+    "lb-brand-name"
   );
+
+  const brandCaption = el(
+    "p",
+    "",
+    "lb-brand-caption"
+  );
+
+  brand.append(
+    brandName,
+    brandCaption
+  );
+
+  // -------------------------------------------
+  // NAVIGATION
+  // -------------------------------------------
 
   const navigation = el(
     "nav",
@@ -215,52 +378,85 @@ export function createAppShell(host) {
     "Main navigation"
   );
 
-  const dashboardButton = createNavButton({
-    label: "Dashboard",
+  const workspaceLabel = el(
+    "p",
+    "",
+    "lb-nav-label"
+  );
+
+  const futureLabel = el(
+    "p",
+    "",
+    "lb-nav-label"
+  );
+
+  const dashboardNav = createNavButton({
+    translationKey: "navigation.dashboard",
     icon: "▦",
     page: "dashboard"
   });
 
-  const corporateButton = createNavButton({
-    label: "Corporate",
+  const corporateNav = createNavButton({
+    translationKey: "navigation.corporate",
     icon: "▤",
     page: "corporate"
   });
 
-  const contractsButton = createNavButton({
-    label: "Contracts",
+  const contractsNav = createNavButton({
+    translationKey: "navigation.contracts",
     icon: "▣",
     page: "contracts",
     disabled: true
   });
 
-  const complianceButton = createNavButton({
-    label: "Compliance",
+  const complianceNav = createNavButton({
+    translationKey: "navigation.compliance",
     icon: "◈",
     page: "compliance",
     disabled: true
   });
 
   navigation.append(
-    el("p", "WORKSPACE", "lb-nav-label"),
-    dashboardButton,
-    corporateButton,
-    el("p", "FUTURE MODULES", "lb-nav-label"),
-    contractsButton,
-    complianceButton
+    workspaceLabel,
+    dashboardNav.element,
+    corporateNav.element,
+    futureLabel,
+    contractsNav.element,
+    complianceNav.element
   );
 
-  const footer = el(
+  // -------------------------------------------
+  // LANGUAGE SELECTOR
+  // -------------------------------------------
+
+  const languageSwitcher =
+    createLanguageSwitcher({
+      onError(error, context) {
+        reportShellError(error, context);
+      }
+    });
+
+  const sidebarFooter = el(
     "div",
-    "Prototype · Human review required",
+    "",
     "lb-sidebar-footer"
   );
 
-  sidebar.append(brand, navigation, footer);
+  // Keep language selection near the
+  // bottom of the sidebar.
+  languageSwitcher.element.style.marginTop =
+    "auto";
 
-  // -------------------------------------
-  // MAIN CONTENT
-  // -------------------------------------
+  sidebar.append(
+    brand,
+    navigation,
+    languageSwitcher.element,
+    sidebarFooter
+  );
+
+  // -------------------------------------------
+  // MAIN WORKSPACE
+  // -------------------------------------------
 
   const main = el(
     "main",
@@ -276,9 +472,9 @@ export function createAppShell(host) {
     "lb-content"
   );
 
-  // -------------------------------------
+  // -------------------------------------------
   // CORPORATE PAGE
-  // -------------------------------------
+  // -------------------------------------------
 
   const corporatePage = el(
     "section",
@@ -292,26 +488,33 @@ export function createAppShell(host) {
     "lb-page-header"
   );
 
-  corporateHeader.append(
-    el(
-      "p",
-      "SWISS LAW / CORPORATE",
-      "lb-eyebrow"
-    ),
-    el(
-      "h1",
-      "Corporate Governance",
-      "lb-page-title"
-    ),
-    el(
-      "p",
-      "Prepare a corporate registry workflow, " +
-      "review legal steps and generate document drafts.",
-      "lb-page-description"
-    )
+  const corporateEyebrow = el(
+    "p",
+    "",
+    "lb-eyebrow"
   );
 
-  // Existing module loader mounts inside this node.
+  const corporateTitle = el(
+    "h1",
+    "",
+    "lb-page-title"
+  );
+
+  const corporateDescription = el(
+    "p",
+    "",
+    "lb-page-description"
+  );
+
+  corporateHeader.append(
+    corporateEyebrow,
+    corporateTitle,
+    corporateDescription
+  );
+
+  // Existing legal modules are mounted here.
+  // Never recreate this element when
+  // changing interface language.
   const moduleContainer = el(
     "div",
     null,
@@ -323,40 +526,61 @@ export function createAppShell(host) {
     moduleContainer
   );
 
-  // -------------------------------------
-  // NAVIGATION
-  // -------------------------------------
+  // -------------------------------------------
+  // DASHBOARD
+  // -------------------------------------------
 
-  const buttons = [
-    dashboardButton,
-    corporateButton
+  const dashboard = createDashboard(navigate);
+
+  content.append(
+    dashboard.element,
+    corporatePage
+  );
+
+  main.appendChild(content);
+
+  shell.append(
+    sidebar,
+    main
+  );
+
+  // -------------------------------------------
+  // PAGE NAVIGATION
+  // -------------------------------------------
+
+  const activeButtons = [
+    dashboardNav.element,
+    corporateNav.element
   ];
 
-  let activePage = "";
+  let activePage = "dashboard";
 
   function navigate(page) {
     if (
-      page !== "dashboard" &&
-      page !== "corporate"
+      destroyed ||
+      !["dashboard", "corporate"].includes(page)
     ) {
-      return;
+      return false;
     }
 
     activePage = page;
 
-    dashboard.hidden = page !== "dashboard";
-    corporatePage.hidden = page !== "corporate";
+    dashboard.element.hidden =
+      page !== "dashboard";
 
-    for (const button of buttons) {
-      const selected =
-        button.dataset.page === activePage;
+    corporatePage.hidden =
+      page !== "corporate";
+
+    for (const button of activeButtons) {
+      const active =
+        button.dataset.page === page;
 
       button.classList.toggle(
         "is-active",
-        selected
+        active
       );
 
-      if (selected) {
+      if (active) {
         button.setAttribute(
           "aria-current",
           "page"
@@ -367,32 +591,94 @@ export function createAppShell(host) {
         );
       }
     }
+
+    return true;
   }
 
-  const dashboard = createDashboard(navigate);
-
-  dashboardButton.addEventListener(
+  dashboardNav.element.addEventListener(
     "click",
     () => navigate("dashboard")
   );
 
-  corporateButton.addEventListener(
+  corporateNav.element.addEventListener(
     "click",
     () => navigate("corporate")
   );
 
-  content.append(dashboard, corporatePage);
-  main.appendChild(content);
+  // -------------------------------------------
+  // UPDATE ALL SHELL TRANSLATIONS
+  // -------------------------------------------
 
-  shell.append(sidebar, main);
+  function updateTranslations() {
+    if (destroyed) return;
 
-  // -------------------------------------
-  // MOUNT
-  // -------------------------------------
+    brandCaption.textContent =
+      t("app.tagline");
+
+    workspaceLabel.textContent =
+      t("navigation.workspace");
+
+    futureLabel.textContent =
+      t("navigation.futureModules");
+
+    sidebarFooter.textContent =
+      t("app.prototype") +
+      " · " +
+      t("app.humanReview");
+
+    navigation.setAttribute(
+      "aria-label",
+      t("navigation.workspace")
+    );
+
+    dashboardNav.updateTranslation();
+    corporateNav.updateTranslation();
+    contractsNav.updateTranslation();
+    complianceNav.updateTranslation();
+
+    dashboard.updateTranslations();
+
+    corporateEyebrow.textContent =
+      t("corporate.eyebrow");
+
+    corporateTitle.textContent =
+      t("corporate.title");
+
+    corporateDescription.textContent =
+      t("corporate.description");
+
+    languageSwitcher.refresh();
+  }
+
+  // -------------------------------------------
+  // LANGUAGE CHANGE SUBSCRIPTION
+  // -------------------------------------------
+
+  const unsubscribe =
+    onLanguageChange(updateTranslations);
+
+  // -------------------------------------------
+  // INITIAL MOUNT
+  // -------------------------------------------
 
   host.replaceChildren(shell);
 
   navigate("dashboard");
+  updateTranslations();
+
+  // Load the saved or browser language.
+  // Keep the shell synchronous for compatibility
+  // with the existing js/app.js bootstrap.
+  initializeI18n().catch((error) => {
+    reportShellError(
+      error,
+      "Language initialization"
+    );
+  });
+
+  // -------------------------------------------
+  // PUBLIC API
+  // -------------------------------------------
 
   return {
     moduleContainer,
@@ -400,7 +686,7 @@ export function createAppShell(host) {
     navigate,
 
     showCorporate() {
-      navigate("corporate");
+      return navigate("corporate");
     },
 
     getActivePage() {
@@ -408,6 +694,13 @@ export function createAppShell(host) {
     },
 
     destroy() {
+      if (destroyed) return;
+
+      destroyed = true;
+
+      unsubscribe();
+      languageSwitcher.destroy();
+
       shell.remove();
     }
   };
