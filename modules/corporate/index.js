@@ -1,10 +1,15 @@
 
 /**
  * LexBridge — Corporate Module Entry Point
- * Version: 0.3.0
+ * Version: 0.4.0
  *
- * Connects independent UI and workflow services.
- * No legal rules or detailed UI rendering here.
+ * Connects:
+ * - Corporate workflow form
+ * - Legal workflow service
+ * - Workflow report
+ * - Document generator
+ *
+ * No legal rules or document templates here.
  */
 
 "use strict";
@@ -22,18 +27,24 @@ import {
   createCorporateWorkflow
 } from "./workflow-service.js";
 
+import {
+  createDocumentController
+} from "./documents/document-controller.js";
+
 /**
- * Called by LexBridge Module Loader.
- *
- * @param {object} context Shared application context.
- * @param {HTMLElement} container Corporate module container.
+ * Called by the LexBridge Module Loader.
  */
 export async function mount(context, container) {
   if (!container) {
-    throw new Error("Corporate module container is missing.");
+    throw new Error(
+      "Corporate module container is missing."
+    );
   }
 
-  // Main module panel
+  // ---------------------------------------
+  // CORPORATE FORM
+  // ---------------------------------------
+
   const panel = document.createElement("section");
   panel.className = "card";
   panel.style.marginTop = "24px";
@@ -47,58 +58,108 @@ export async function mount(context, container) {
     "Prepare preliminary Swiss corporate registry " +
     "workflows using federal and cantonal legal data.";
 
-  // Independent form component
   const { form, submitButton } =
     createCorporateForm();
 
-  // Independent report component
-  const reportContainer = document.createElement("section");
-  reportContainer.style.marginTop = "24px";
-  reportContainer.hidden = true;
-  reportContainer.setAttribute("aria-live", "polite");
-
-  const reportController =
-    createReportController(context, reportContainer);
-
-  // Connect form to workflow service
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    submitButton.disabled = true;
-    submitButton.textContent = "Generating workflow...";
-
-    try {
-      const matter = readCorporateMatter(form);
-
-      const workflow =
-        await createCorporateWorkflow(matter);
-
-      reportController.setWorkflow(workflow);
-
-      context.setStatus(
-        "Corporate workflow generated successfully.",
-        "success"
-      );
-
-    } catch (error) {
-      context.reportError(
-        error,
-        "Corporate workflow generation"
-      );
-
-      context.setStatus(
-        "Corporate workflow generation failed.",
-        "error"
-      );
-
-    } finally {
-      submitButton.disabled = false;
-      submitButton.textContent = "Generate legal workflow";
-    }
-  });
-
   panel.append(heading, description, form);
 
-  // Mount independent components
-  container.replaceChildren(panel, reportContainer);
+  // ---------------------------------------
+  // WORKFLOW REPORT
+  // ---------------------------------------
+
+  const reportContainer =
+    document.createElement("section");
+
+  reportContainer.style.marginTop = "24px";
+  reportContainer.hidden = true;
+
+  reportContainer.setAttribute(
+    "aria-live",
+    "polite"
+  );
+
+  const reportController =
+    createReportController(
+      context,
+      reportContainer
+    );
+
+  // ---------------------------------------
+  // DOCUMENT GENERATOR
+  // ---------------------------------------
+
+  const documentContainer =
+    document.createElement("section");
+
+  documentContainer.style.marginTop = "24px";
+  documentContainer.hidden = true;
+
+  const documentController =
+    createDocumentController(
+      context,
+      documentContainer,
+      null
+    );
+
+  // ---------------------------------------
+  // SUBMIT CORPORATE WORKFLOW
+  // ---------------------------------------
+
+  form.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
+
+      submitButton.disabled = true;
+      submitButton.textContent =
+        "Generating workflow...";
+
+      // Prevent old document drafts from
+      // remaining linked to a new case.
+      documentController.clear();
+
+      try {
+        const matter = readCorporateMatter(form);
+
+        const workflow =
+          await createCorporateWorkflow(matter);
+
+        reportController.setWorkflow(workflow);
+
+        // Enable documents only for appointment.
+        documentController.updateMatter(matter);
+
+        context.setStatus(
+          "Corporate workflow generated successfully.",
+          "success"
+        );
+
+      } catch (error) {
+        context.reportError(
+          error,
+          "Corporate workflow generation"
+        );
+
+        context.setStatus(
+          "Corporate workflow generation failed.",
+          "error"
+        );
+
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent =
+          "Generate legal workflow";
+      }
+    }
+  );
+
+  // ---------------------------------------
+  // MOUNT COMPONENTS
+  // ---------------------------------------
+
+  container.replaceChildren(
+    panel,
+    reportContainer,
+    documentContainer
+  );
 }
