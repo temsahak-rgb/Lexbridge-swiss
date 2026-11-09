@@ -1,0 +1,268 @@
+
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "0.1.0",
+  "jurisdiction": "CH",
+  "level": "cantonal_procedure",
+  "canton": "BS",
+  "name": "Basel-Stadt",
+  "language": "de",
+  "status": "preliminary",
+  "lastReviewed": "2026-11-09",
+  "authority": {
+    "name": "Handelsregisteramt Basel-Stadt",
+    "location": "Basel",
+    "website": "https://www.bs.ch/jsd/zentraler-rechtsdienst/handelsregisteramt",
+    "postalAddress": "Handelsregisteramt Basel-Stadt, Postfach, 4001 Basel",
+    "counterAddress": "Claramattweg 8, 4057 Basel"
+  },
+  "scope": {
+    "companyTypes": ["SA", "SARL"],
+    "operations": ["appoint", "remove", "signature"]
+  },
+  "sources": [
+    {
+      "id": "BS-GENERAL",
+      "title": "Basel-Stadt - Commercial Register Office",
+      "url": "https://www.bs.ch/jsd/zentraler-rechtsdienst/handelsregisteramt",
+      "reference": "Official registry procedures, forms and filing channels",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "BS-PERSONNEL",
+      "title": "Basel-Stadt - Supporting documents for personnel changes (2026)",
+      "url": "https://media.bs.ch/original_file/cf6cca8aab1c6b9c4f394ddd251e7397f95e562d/2026merkblatt-belege-personalmutationen-0.pdf",
+      "reference": "Merkblatt: Belege für Personalmutationen bei juristischen Personen",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "BS-AG-FORM",
+      "title": "Basel-Stadt - AG personnel-change application",
+      "url": "https://media.bs.ch/original_file/4dcd6b6a2059280970291777d0d21e38d7274bdc/anmeldeformular-personal-und-domizilaenderung-0.pdf",
+      "reference": "Handelsregisteranmeldung für Aktiengesellschaften",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "BS-GMBH-FORM",
+      "title": "Basel-Stadt - GmbH personnel-change application",
+      "url": "https://media.bs.ch/original_file/261ffa2d39642d7b552dd42638abff58d600df73/anmeldeformular-personal-und-domizilaenderungen-0.pdf",
+      "reference": "Handelsregisteranmeldung für Gesellschaften mit beschränkter Haftung",
+      "verifiedAt": "2026-11-09"
+    }
+  ],
+  "requiredFields": [
+    "companyName",
+    "companyType",
+    "canton",
+    "operation",
+    "personName"
+  ],
+  "steps": [
+    {
+      "id": "bs-registry-review",
+      "title": "Review Basel-Stadt registry instructions",
+      "description": "Consult the current personnel-change guidance and confirm the requirements applicable to the company's legal form.",
+      "required": true,
+      "sourceIds": ["BS-GENERAL", "BS-PERSONNEL"]
+    },
+    {
+      "id": "bs-application",
+      "title": "Prepare the Handelsregisteranmeldung",
+      "description": "Prepare the German-language application identifying the company, the persons concerned and the requested register changes.",
+      "required": true,
+      "sourceIds": ["BS-PERSONNEL"]
+    },
+    {
+      "id": "bs-authorised-signatures",
+      "title": "Verify application signatories",
+      "description": "Check who is legally entitled to sign the commercial register application for the selected legal form and transaction.",
+      "required": true,
+      "sourceIds": ["BS-GENERAL", "BS-PERSONNEL"]
+    },
+    {
+      "id": "bs-supporting-documents",
+      "title": "Review supporting documents",
+      "description": "Check the relevant corporate decision, acceptance or departure evidence and required identification documents.",
+      "required": true,
+      "sourceIds": ["BS-PERSONNEL"]
+    },
+    {
+      "id": "bs-filing-channel",
+      "title": "Select a permitted submission method",
+      "description": "Determine whether to submit original paper documents by post or at the counter, or to use a qualified electronic filing procedure.",
+      "required": true,
+      "sourceIds": ["BS-GENERAL"]
+    }
+  ],
+  "companyTypes": {
+    "SA": {
+      "steps": [
+        {
+          "id": "bs-sa-form",
+          "title": "Review the AG application form",
+          "description": "Use the official AG personnel-change form as the starting point and verify the supporting documents.",
+          "required": true,
+          "sourceIds": ["BS-AG-FORM"]
+        },
+        {
+          "id": "bs-sa-board",
+          "title": "Check board decision-making",
+          "description": "Distinguish election by the general meeting from the board's organisational and signing-authority decisions.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        }
+      ],
+      "warnings": [
+        "Review the articles of association when determining the competent body for board organisation.",
+        "Board membership and signing authority are distinct matters."
+      ]
+    },
+    "SARL": {
+      "steps": [
+        {
+          "id": "bs-sarl-form",
+          "title": "Review the GmbH application form",
+          "description": "Use the official GmbH personnel-change form and confirm the applicable management and representation arrangements.",
+          "required": true,
+          "sourceIds": ["BS-GMBH-FORM"]
+        },
+        {
+          "id": "bs-sarl-management",
+          "title": "Check GmbH management arrangements",
+          "description": "Review the relevant members' decision, articles of association and management structure.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        }
+      ],
+      "warnings": [
+        "Do not automatically apply AG board-election procedures to GmbH management changes."
+      ]
+    }
+  },
+  "operations": {
+    "appoint": {
+      "steps": [
+        {
+          "id": "bs-appointment-decision",
+          "title": "Review appointment decision",
+          "description": "Check the minutes or valid decision of the corporate body competent to appoint the person.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        },
+        {
+          "id": "bs-acceptance",
+          "title": "Verify acceptance of appointment",
+          "description": "Check the accepted evidence of Wahlannahme, such as a signed acceptance declaration, co-signature or recorded acceptance at the meeting.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        },
+        {
+          "id": "bs-identity",
+          "title": "Check identification documents",
+          "description": "Review the identity-document requirement for a newly registered individual, including any applicable exception where certified signature records already contain the required particulars.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        },
+        {
+          "id": "bs-certified-signature",
+          "title": "Check certified specimen signature",
+          "description": "Where the appointee is authorised to represent the company, verify the requirements for depositing an officially certified specimen signature.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        }
+      ],
+      "warnings": [
+        "Several methods of documenting acceptance of office may be permissible.",
+        "A person newly appointed to a corporate body does not necessarily have individual signing authority."
+      ]
+    },
+    "remove": {
+      "steps": [
+        {
+          "id": "bs-removal-basis",
+          "title": "Determine the reason for departure",
+          "description": "Identify whether the person was removed, resigned or left office for another reason.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        },
+        {
+          "id": "bs-departure-evidence",
+          "title": "Review departure evidence",
+          "description": "Check the relevant corporate minutes, resignation letter, co-signed application or other permitted evidence for the circumstances.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        },
+        {
+          "id": "bs-remaining-representation",
+          "title": "Check remaining corporate representation",
+          "description": "Review whether the remaining officers and signatories satisfy applicable representation requirements.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        }
+      ],
+      "warnings": [
+        "The supporting documents differ depending on the legal reason for departure.",
+        "The departing person may be entitled to request their own deletion if they can provide the required evidence."
+      ]
+    },
+    "signature": {
+      "steps": [
+        {
+          "id": "bs-signing-decision",
+          "title": "Review signing-authority decision",
+          "description": "Check the relevant decision concerning the granting, modification or cancellation of registered signing authority.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        },
+        {
+          "id": "bs-signing-mode",
+          "title": "Confirm the registered signing mode",
+          "description": "Identify the proposed individual or collective signature arrangement and distinguish signing rights from corporate office.",
+          "required": true,
+          "sourceIds": ["BS-AG-FORM", "BS-GMBH-FORM"]
+        },
+        {
+          "id": "bs-signatory-documents",
+          "title": "Check documents for newly authorised signatories",
+          "description": "Determine whether an identity document and certified specimen signature must be submitted.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        },
+        {
+          "id": "bs-cancel-signature",
+          "title": "Review cancellation of existing authority",
+          "description": "If a person is losing signing authority, check whether additional departure or cancellation evidence is required.",
+          "required": true,
+          "sourceIds": ["BS-PERSONNEL"]
+        }
+      ],
+      "warnings": [
+        "The cancellation procedure may differ for an officer and a signatory without corporate office.",
+        "Check the underlying contractual relationship where its termination is relevant to the supporting evidence."
+      ]
+    }
+  },
+  "filing": {
+    "channels": [
+      "post",
+      "in_person",
+      "qualified_electronic_submission"
+    ],
+    "language": "de",
+    "postalAddress": "Handelsregisteramt Basel-Stadt, Postfach, 4001 Basel",
+    "counterAddress": "Claramattweg 8, Basel",
+    "electronicRequirements": [
+      "Check whether the selected digital submission channel is accepted by the registry.",
+      "Use qualified electronic signatures and qualified electronic time stamps meeting Swiss requirements.",
+      "Verify the electronic certification requirements for supporting documents."
+    ]
+  },
+  "warnings": [
+    "This is a preliminary workflow dataset, not a definitive filing checklist.",
+    "Verify current Basel-Stadt instructions before submitting any application.",
+    "Requirements differ by legal form, registered role and type of change.",
+    "Avoid including unnecessary personal or confidential information in publicly accessible registry documents.",
+    "Foreign signature certifications may require an apostille or additional legalisation depending on applicable treaties.",
+    "Human legal review is required before filing."
+  ]
+}
