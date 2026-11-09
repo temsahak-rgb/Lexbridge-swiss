@@ -1,0 +1,12 @@
+export type CantonCode='ZH'|'VD'|'GE'|'BS';
+export type CompanyType='AG'|'GmbH';
+export type ChangeType='appoint'|'remove'|'signature';
+export type Intake={canton:CantonCode;companyType:CompanyType;changeType:ChangeType;companyName:string;personName:string;competentBodyConfirmed:boolean;signingAuthority:string};
+export type DocumentItem={id:string;text:string;checked:boolean};
+export type Source={name:string;url:string};
+export type Evaluation={companyType:CompanyType;canton:CantonCode;changeType:ChangeType;companyName:string;personName:string;generatedAt:string;documents:DocumentItem[];missing:string[];flags:string[];federalSources:Source[];cantonalSource:Source;cantonNote:string;status:string};
+export const cantons:Record<CantonCode,{name:string;locale:string;url:string;signatory?:string;gmbh?:string;memo?:string;note:string}>;
+export const federalSources:Source[];
+export const companyTypes:string[];
+export const changeTypes:string[];
+export function evaluate(input:Intake):Evaluation;
