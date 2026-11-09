@@ -1,0 +1,439 @@
+
+/*
+ * LexBridge — Workspace Design System
+ * Version: 0.1.0
+ *
+ * Professional Swiss LegalTech interface.
+ * Responsive, accessible, dependency-free.
+ *
+ * All styles are scoped to .lb-shell to avoid
+ * affecting the existing LexBridge interface.
+ */
+
+.lb-shell {
+  --lb-navy: #172c45;
+  --lb-blue: #245b91;
+  --lb-blue-light: #eaf2fa;
+  --lb-background: #f5f7fa;
+  --lb-surface: #ffffff;
+  --lb-border: #dce3ea;
+  --lb-text: #243447;
+  --lb-muted: #617084;
+  --lb-sidebar-width: 254px;
+  --lb-radius: 12px;
+
+  display: flex;
+  min-height: 100vh;
+  background: var(--lb-background);
+  color: var(--lb-text);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ---------------------------------------
+   SIDEBAR
+--------------------------------------- */
+
+.lb-shell .lb-sidebar {
+  width: var(--lb-sidebar-width);
+  flex: 0 0 var(--lb-sidebar-width);
+  background: var(--lb-surface);
+  border-right: 1px solid var(--lb-border);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.lb-shell .lb-brand {
+  padding: 4px 12px 16px;
+  border-bottom: 1px solid var(--lb-border);
+}
+
+.lb-shell .lb-brand-name {
+  margin: 0;
+  color: var(--lb-navy);
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.6px;
+}
+
+.lb-shell .lb-brand-caption {
+  margin: 2px 0 0;
+  color: var(--lb-muted);
+  font-size: 12px;
+}
+
+.lb-shell .lb-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lb-shell .lb-nav-label {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--lb-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.lb-shell .lb-nav-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--lb-text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.lb-shell .lb-nav-item:hover:not(:disabled) {
+  background: #f0f4f8;
+}
+
+.lb-shell .lb-nav-item.is-active {
+  color: var(--lb-blue);
+  background: var(--lb-blue-light);
+  font-weight: 700;
+}
+
+.lb-shell .lb-nav-item:disabled {
+  color: #8b95a3;
+  cursor: not-allowed;
+}
+
+.lb-shell .lb-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex: 0 0 24px;
+  font-size: 19px;
+}
+
+.lb-shell .lb-nav-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--lb-muted);
+}
+
+.lb-shell .lb-sidebar-footer {
+  margin-top: auto;
+  padding: 14px 12px 0;
+  border-top: 1px solid var(--lb-border);
+  color: var(--lb-muted);
+  font-size: 12px;
+}
+
+/* ---------------------------------------
+   MAIN WORKSPACE
+--------------------------------------- */
+
+.lb-shell .lb-main {
+  flex: 1;
+  min-width: 0;
+  padding: 32px clamp(20px, 4vw, 56px);
+}
+
+.lb-shell .lb-content {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.lb-shell .lb-page-header {
+  margin-bottom: 28px;
+}
+
+.lb-shell .lb-eyebrow {
+  margin: 0 0 8px;
+  color: var(--lb-blue);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.lb-shell .lb-page-title {
+  margin: 0;
+  color: var(--lb-navy);
+  font-size: clamp(25px, 3vw, 34px);
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.lb-shell .lb-page-description {
+  margin: 12px 0 0;
+  max-width: 720px;
+  color: var(--lb-muted);
+  font-size: 16px;
+}
+
+/* ---------------------------------------
+   CONTENT PANELS
+--------------------------------------- */
+
+.lb-shell .lb-panel {
+  padding: 28px;
+  margin-bottom: 22px;
+  background: var(--lb-surface);
+  border: 1px solid var(--lb-border);
+  border-radius: var(--lb-radius);
+  box-shadow: 0 2px 8px rgb(23 44 69 / 3%);
+}
+
+.lb-shell .lb-panel-title {
+  margin: 0 0 12px;
+  color: var(--lb-navy);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.lb-shell .lb-muted {
+  color: var(--lb-muted);
+}
+
+.lb-shell .lb-divider {
+  height: 1px;
+  margin: 22px 0;
+  background: var(--lb-border);
+}
+
+/* ---------------------------------------
+   DASHBOARD CARDS
+--------------------------------------- */
+
+.lb-shell .lb-dashboard-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+}
+
+.lb-shell .lb-dashboard-card {
+  padding: 24px;
+  background: var(--lb-surface);
+  border: 1px solid var(--lb-border);
+  border-radius: var(--lb-radius);
+}
+
+.lb-shell .lb-dashboard-card h3 {
+  margin: 0 0 10px;
+  color: var(--lb-navy);
+  font-size: 19px;
+}
+
+.lb-shell .lb-dashboard-card p {
+  margin: 0 0 18px;
+  color: var(--lb-muted);
+  font-size: 15px;
+}
+
+/* ---------------------------------------
+   WIZARD / STEPS
+--------------------------------------- */
+
+.lb-shell .lb-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 24px;
+}
+
+.lb-shell .lb-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border: 1px solid var(--lb-border);
+  border-radius: 9px;
+  background: var(--lb-surface);
+  color: var(--lb-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.lb-shell .lb-step.is-current {
+  border-color: var(--lb-blue);
+  background: var(--lb-blue-light);
+  color: var(--lb-blue);
+}
+
+.lb-shell .lb-step.is-complete {
+  color: #21644c;
+  background: #edf8f2;
+  border-color: #c7e6d5;
+}
+
+.lb-shell .lb-step-number {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e9eef3;
+  color: var(--lb-navy);
+  font-size: 12px;
+}
+
+.lb-shell .lb-step.is-current .lb-step-number {
+  background: var(--lb-blue);
+  color: #fff;
+}
+
+/* ---------------------------------------
+   FORM READABILITY
+--------------------------------------- */
+
+.lb-shell label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.lb-shell input,
+.lb-shell select,
+.lb-shell textarea {
+  max-width: 100%;
+  min-height: 46px;
+  font-size: 16px;
+}
+
+.lb-shell button {
+  min-height: 44px;
+}
+
+.lb-shell button,
+.lb-shell input,
+.lb-shell select,
+.lb-shell textarea {
+  font-family: inherit;
+}
+
+.lb-shell :focus-visible {
+  outline: 3px solid #7db6ee;
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------
+   HELPER / STATUS
+--------------------------------------- */
+
+.lb-shell .lb-help-text {
+  margin: 7px 0 0;
+  color: var(--lb-muted);
+  font-size: 14px;
+}
+
+.lb-shell .lb-status {
+  padding: 14px 16px;
+  border-radius: 9px;
+  border: 1px solid var(--lb-border);
+  background: var(--lb-surface);
+}
+
+.lb-shell .lb-status.is-info {
+  background: #edf5fc;
+  border-color: #cee2f4;
+}
+
+.lb-shell .lb-status.is-warning {
+  background: #fff8e9;
+  border-color: #f0dfa9;
+}
+
+.lb-shell .lb-status.is-error {
+  background: #fff0ef;
+  border-color: #f1c8c5;
+}
+
+/* ---------------------------------------
+   MOBILE / IPAD
+--------------------------------------- */
+
+@media (max-width: 900px) {
+  .lb-shell {
+    flex-direction: column;
+  }
+
+  .lb-shell .lb-sidebar {
+    width: 100%;
+    flex: none;
+    padding: 14px 18px;
+    gap: 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--lb-border);
+  }
+
+  .lb-shell .lb-brand {
+    padding: 0 4px 10px;
+  }
+
+  .lb-shell .lb-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  .lb-shell .lb-nav-item {
+    flex: 0 0 auto;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .lb-shell .lb-nav-label,
+  .lb-shell .lb-sidebar-footer {
+    display: none;
+  }
+
+  .lb-shell .lb-main {
+    padding: 24px 18px;
+  }
+}
+
+@media (max-width: 560px) {
+  .lb-shell .lb-panel {
+    padding: 18px;
+  }
+
+  .lb-shell .lb-page-title {
+    font-size: 26px;
+  }
+
+  .lb-shell .lb-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lb-shell .lb-step {
+    flex: 1 1 140px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lb-shell *,
+  .lb-shell *::before,
+  .lb-shell *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
