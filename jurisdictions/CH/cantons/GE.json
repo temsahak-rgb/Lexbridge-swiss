@@ -1,0 +1,245 @@
+
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "0.1.0",
+  "jurisdiction": "CH",
+  "level": "cantonal_procedure",
+  "canton": "GE",
+  "name": "Geneva",
+  "language": "fr",
+  "status": "preliminary",
+  "lastReviewed": "2026-11-09",
+  "authority": {
+    "name": "OCIRT - Registre du commerce",
+    "location": "Geneva",
+    "website": "https://www.ge.ch/organisation/ocirt-registre-du-commerce-rc"
+  },
+  "scope": {
+    "companyTypes": ["SA", "SARL"],
+    "operations": ["appoint", "remove", "signature"]
+  },
+  "sources": [
+    {
+      "id": "GE-GENERAL",
+      "title": "Geneva - Commercial register information",
+      "url": "https://www.ge.ch/inscrire-au-registre-du-commerce-actualiser-ses-donnees",
+      "reference": "Official cantonal commercial register guidance",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "GE-MODIFICATION",
+      "title": "Geneva - Modify a commercial register entry",
+      "url": "https://www.ge.ch/inscrire-au-registre-du-commerce-actualiser-ses-donnees/modifier-son-inscription",
+      "reference": "Modification applications and supporting documents",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "GE-FORMS",
+      "title": "Geneva - Commercial register documentation and forms",
+      "url": "https://www.ge.ch/document/registre-du-commerce-documentation-formulaires",
+      "reference": "Official forms and document templates",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "GE-SIGNATURE",
+      "title": "Geneva - Legalisation and certification",
+      "url": "https://www.ge.ch/consulter-registre-du-commerce-commander-documents/lexique-definitions",
+      "reference": "Signature certification and legalisation",
+      "verifiedAt": "2026-11-09"
+    }
+  ],
+  "requiredFields": [
+    "companyName",
+    "companyType",
+    "canton",
+    "operation",
+    "personName"
+  ],
+  "steps": [
+    {
+      "id": "ge-registry-instructions",
+      "title": "Review Geneva registry instructions",
+      "description": "Consult the current Geneva guidance for the requested corporate change.",
+      "required": true,
+      "sourceIds": ["GE-MODIFICATION"]
+    },
+    {
+      "id": "ge-requisition",
+      "title": "Prepare the modification application",
+      "description": "Prepare a written, dated and signed requisition de modification in French, identifying the registered information to be changed.",
+      "required": true,
+      "sourceIds": ["GE-MODIFICATION"]
+    },
+    {
+      "id": "ge-authorised-signatures",
+      "title": "Verify application signatures",
+      "description": "For a non-statutory SA or Sàrl change, check signature by two authorised collective signatories or one person authorised to sign individually, as specified in Geneva's guidance.",
+      "required": true,
+      "sourceIds": ["GE-MODIFICATION"]
+    },
+    {
+      "id": "ge-supporting-evidence",
+      "title": "Review supporting documents",
+      "description": "Identify the supporting decisions, acceptance evidence and other documents required for the selected change. Check requirements for originals or notarised certified copies.",
+      "required": true,
+      "sourceIds": ["GE-MODIFICATION"]
+    },
+    {
+      "id": "ge-filing-method",
+      "title": "Verify filing and submission requirements",
+      "description": "Confirm the current submission procedure with the Geneva Commercial Register Office and ensure that the application is properly signed and accompanied by the required documents.",
+      "required": true,
+      "sourceIds": ["GE-GENERAL", "GE-MODIFICATION"]
+    }
+  ],
+  "companyTypes": {
+    "SA": {
+      "steps": [
+        {
+          "id": "ge-sa-board-decision",
+          "title": "Review board appointment and powers",
+          "description": "Distinguish the general meeting's election of board members from the board decision concerning signing arrangements.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        }
+      ],
+      "warnings": [
+        "Confirm whether the proposed change concerns board membership, operational management, signing authority or a combination of these.",
+        "Changes to the articles of association may require additional formalities, including notarial involvement."
+      ]
+    },
+    "SARL": {
+      "steps": [
+        {
+          "id": "ge-sarl-management",
+          "title": "Review Sàrl management decision",
+          "description": "Identify the competent corporate body, the appointment or removal basis and any associated signing-authority changes.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        }
+      ],
+      "warnings": [
+        "Do not automatically apply SA board-election rules to a Sàrl.",
+        "Review the company's articles of association and the applicable management arrangements."
+      ]
+    }
+  },
+  "operations": {
+    "appoint": {
+      "steps": [
+        {
+          "id": "ge-appointment-minutes",
+          "title": "Review appointment minutes",
+          "description": "Review the general meeting or other competent body's appointment decision, as appropriate to the registered role.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        },
+        {
+          "id": "ge-appointment-acceptance",
+          "title": "Check acceptance of appointment",
+          "description": "Review the acceptance letter or whether acceptance is evidenced through signing the requisition, where permitted.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        },
+        {
+          "id": "ge-identity",
+          "title": "Check identification documents",
+          "description": "Review a valid identity card or passport for the person to be registered.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        },
+        {
+          "id": "ge-signature-legalisation",
+          "title": "Review signature legalisation",
+          "description": "Check the legalisation requirements applicable to the newly registered person and their representative authority.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION", "GE-SIGNATURE"]
+        },
+        {
+          "id": "ge-appointment-signing-mode",
+          "title": "Confirm signing authority",
+          "description": "Record whether the person has individual, collective or no signing authority, and check the supporting decision.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        }
+      ],
+      "warnings": [
+        "Geneva provides specific supporting-document guidance for registering a new administrator, manager or other officeholder.",
+        "Acceptance evidence and the decision supporting signing powers may depend on who signed the requisition."
+      ]
+    },
+    "remove": {
+      "steps": [
+        {
+          "id": "ge-departure-record",
+          "title": "Review removal or resignation evidence",
+          "description": "Check the relevant corporate decision or a copy of the resignation letter sent to the company's registered office, as applicable.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        },
+        {
+          "id": "ge-remove-signing-rights",
+          "title": "Verify cancellation of registered powers",
+          "description": "Confirm whether the person's registered signing authority must be removed together with their office.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        },
+        {
+          "id": "ge-remaining-officers",
+          "title": "Review remaining representation",
+          "description": "Check whether the remaining registered officers continue to satisfy the company's legal representation requirements.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        }
+      ],
+      "warnings": [
+        "Geneva distinguishes departure of corporate officeholders from cancellation of powers held by other authorised representatives.",
+        "The required evidence may differ between removal and resignation."
+      ]
+    },
+    "signature": {
+      "steps": [
+        {
+          "id": "ge-signature-decision",
+          "title": "Review the signing-authority decision",
+          "description": "Review the appropriate corporate-body decision or determine whether the requisition-signature exception described in Geneva's guidance applies.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        },
+        {
+          "id": "ge-signature-mode",
+          "title": "Define the registered signing mode",
+          "description": "Specify individual or collective signing authority, or the cancellation of an existing power.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        },
+        {
+          "id": "ge-new-signatory",
+          "title": "Verify documents for new signatories",
+          "description": "Check identification and legalisation requirements for a person newly receiving registered representative authority.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION", "GE-SIGNATURE"]
+        },
+        {
+          "id": "ge-cancellation",
+          "title": "Check cancellation procedure",
+          "description": "For an existing signing authority being withdrawn, identify the supporting evidence required for that person's registered role.",
+          "required": true,
+          "sourceIds": ["GE-MODIFICATION"]
+        }
+      ],
+      "warnings": [
+        "Different rules may apply to a new signatory, modification of an existing signing mode and cancellation of an existing power.",
+        "Do not confuse an internal authorisation with a power of representation registered in the commercial register."
+      ]
+    }
+  },
+  "warnings": [
+    "This is a preliminary workflow dataset and not a definitive filing checklist.",
+    "Verify the company's current commercial register entry and articles of association.",
+    "Geneva requires supporting documents to be properly executed and, where applicable, provided in original or notarised certified form.",
+    "Foreign legalisations may require an apostille or Swiss consular legalisation.",
+    "For entities subject to FINMA supervision, additional regulatory approval may be required.",
+    "All documents must undergo human legal review before filing."
+  ]
+}
