@@ -1,33 +1,98 @@
 
 /**
  * LexBridge — Corporate Form
- * Version 0.3.0
+ * Version: 0.4.0
  *
- * Creates and reads the Corporate Governance form.
- * Independent of the legal workflow engine.
+ * Multilingual Corporate Governance form.
+ *
+ * Interface languages:
+ * - English
+ * - French
+ * - German
+ *
+ * Features:
+ * - Live translation without page reload
+ * - Preserves entered form values
+ * - Preserves select option values
+ * - Compatible with Matter Wizard
+ * - Independent of the legal workflow engine
+ * - Accessible form labels
+ *
+ * No external dependencies.
  */
 
 "use strict";
 
+import {
+  t,
+  onLanguageChange
+} from "../../../js/core/i18n.js";
+
+// ---------------------------------------------
+// FIXED LEGAL VALUES
+// ---------------------------------------------
+
+/**
+ * These IDs must never be translated.
+ *
+ * The legal workflow engine relies on
+ * these exact values.
+ */
+
 const COMPANY_TYPES = [
-  { id: "SA", label: "SA / AG — Corporation" },
-  { id: "SARL", label: "Sàrl / GmbH — Limited Liability Company" }
+  {
+    id: "SA",
+    translationKey: "companyTypes.SA"
+  },
+  {
+    id: "SARL",
+    translationKey: "companyTypes.SARL"
+  }
 ];
 
 const CANTONS = [
-  { id: "VD", label: "Vaud" },
-  { id: "GE", label: "Geneva" },
-  { id: "ZH", label: "Zurich" },
-  { id: "BS", label: "Basel-Stadt" }
+  {
+    id: "VD",
+    translationKey: "cantons.VD"
+  },
+  {
+    id: "GE",
+    translationKey: "cantons.GE"
+  },
+  {
+    id: "ZH",
+    translationKey: "cantons.ZH"
+  },
+  {
+    id: "BS",
+    translationKey: "cantons.BS"
+  }
 ];
 
 const OPERATIONS = [
-  { id: "appoint", label: "Appointment of director / manager" },
-  { id: "remove", label: "Removal or resignation" },
-  { id: "signature", label: "Change of signing authority" }
+  {
+    id: "appoint",
+    translationKey: "operations.appoint"
+  },
+  {
+    id: "remove",
+    translationKey: "operations.remove"
+  },
+  {
+    id: "signature",
+    translationKey: "operations.signature"
+  }
 ];
 
-function createElement(tag, text, className) {
+// ---------------------------------------------
+// DOM HELPER
+// ---------------------------------------------
+
+function createElement(
+  tag,
+  text = null,
+  className = ""
+) {
   const node = document.createElement(tag);
 
   if (text !== undefined && text !== null) {
@@ -41,34 +106,76 @@ function createElement(tag, text, className) {
   return node;
 }
 
-function addField(form, label, name, options = {}) {
-  const wrapper = createElement("div", null, "form-group");
+// ---------------------------------------------
+// FIELD CREATION
+// ---------------------------------------------
+
+/**
+ * Create a form field.
+ *
+ * Keeps a stable input/select element.
+ * Language changes modify labels only.
+ *
+ * Returns:
+ * - control
+ * - updateTranslation()
+ */
+
+function addField(
+  form,
+  translationKey,
+  name,
+  options = {}
+) {
+  const wrapper = createElement(
+    "div",
+    null,
+    "form-group"
+  );
 
   const labelNode = createElement(
     "label",
-    label,
+    "",
     "form-label"
   );
 
-  labelNode.htmlFor = "corporate-" + name;
+  const fieldId = "corporate-" + name;
+
+  labelNode.htmlFor = fieldId;
 
   let control;
 
-  if (Array.isArray(options.choices)) {
+  const choices = Array.isArray(
+    options.choices
+  )
+    ? options.choices
+    : null;
+
+  const optionNodes = [];
+
+  if (choices) {
     control = createElement(
       "select",
       null,
       "form-control"
     );
 
-    for (const choice of options.choices) {
-      const option = createElement(
+    for (const choice of choices) {
+      const optionNode = createElement(
         "option",
-        choice.label
+        ""
       );
 
-      option.value = choice.id;
-      control.appendChild(option);
+      // These values are legally meaningful
+      // and must remain unchanged.
+      optionNode.value = choice.id;
+
+      control.appendChild(optionNode);
+
+      optionNodes.push({
+        element: optionNode,
+        translationKey: choice.translationKey
+      });
     }
   } else {
     control = createElement(
@@ -78,83 +185,274 @@ function addField(form, label, name, options = {}) {
     );
 
     control.type = "text";
-    control.maxLength = options.maxLength || 120;
-    control.placeholder = options.placeholder || "";
+
+    control.maxLength =
+      options.maxLength || 120;
   }
 
-  control.id = "corporate-" + name;
+  control.id = fieldId;
   control.name = name;
-  control.required = options.required !== false;
 
-  wrapper.append(labelNode, control);
+  control.required =
+    options.required !== false;
+
+  wrapper.append(
+    labelNode,
+    control
+  );
+
   form.appendChild(wrapper);
 
-  return control;
+  // -------------------------------------------
+  // TRANSLATION UPDATE
+  // -------------------------------------------
+
+  function updateTranslation() {
+    const translatedLabel = t(
+      translationKey
+    );
+
+    labelNode.textContent =
+      translatedLabel;
+
+    if (
+      !choices &&
+      options.placeholderKey
+    ) {
+      control.placeholder = t(
+        options.placeholderKey
+      );
+    }
+
+    if (choices) {
+      for (const item of optionNodes) {
+        item.element.textContent = t(
+          item.translationKey
+        );
+      }
+    }
+  }
+
+  updateTranslation();
+
+  return {
+    control,
+    updateTranslation
+  };
 }
+
+// ---------------------------------------------
+// CORPORATE FORM
+// ---------------------------------------------
+
+/**
+ * Create the Corporate Governance form.
+ *
+ * Existing return properties are preserved:
+ *
+ * {
+ *   form,
+ *   submitButton
+ * }
+ *
+ * Additional optional method:
+ *
+ * destroy()
+ *
+ * Call destroy() when permanently removing
+ * the form, to unsubscribe from language events.
+ */
 
 export function createCorporateForm() {
   const form = createElement("form");
+
   form.id = "corporate-matter-form";
+
   form.style.marginTop = "22px";
 
-  addField(form, "Company name", "companyName", {
-    placeholder: "Example: Alpine Services SA"
-  });
+  // -------------------------------------------
+  // FIELD REGISTRY
+  // -------------------------------------------
 
-  addField(form, "Person concerned", "personName", {
-    placeholder: "Example: Marie Dupont"
-  });
+  const fields = [];
 
-  addField(form, "Company type", "companyType", {
-    choices: COMPANY_TYPES
-  });
+  function registerField(
+    translationKey,
+    name,
+    options
+  ) {
+    const field = addField(
+      form,
+      translationKey,
+      name,
+      options
+    );
 
-  addField(form, "Registered canton", "canton", {
-    choices: CANTONS
-  });
+    fields.push(field);
 
-  addField(form, "Type of change", "operation", {
-    choices: OPERATIONS
-  });
+    return field.control;
+  }
+
+  // -------------------------------------------
+  // COMPANY NAME
+  // -------------------------------------------
+
+  registerField(
+    "corporate.companyName",
+    "companyName",
+    {
+      placeholderKey:
+        "corporate.companyNamePlaceholder"
+    }
+  );
+
+  // -------------------------------------------
+  // PERSON CONCERNED
+  // -------------------------------------------
+
+  registerField(
+    "corporate.personName",
+    "personName",
+    {
+      placeholderKey:
+        "corporate.personNamePlaceholder"
+    }
+  );
+
+  // -------------------------------------------
+  // COMPANY TYPE
+  // -------------------------------------------
+
+  registerField(
+    "corporate.companyType",
+    "companyType",
+    {
+      choices: COMPANY_TYPES
+    }
+  );
+
+  // -------------------------------------------
+  // REGISTERED CANTON
+  // -------------------------------------------
+
+  registerField(
+    "corporate.registeredCanton",
+    "canton",
+    {
+      choices: CANTONS
+    }
+  );
+
+  // -------------------------------------------
+  // OPERATION TYPE
+  // -------------------------------------------
+
+  registerField(
+    "corporate.operation",
+    "operation",
+    {
+      choices: OPERATIONS
+    }
+  );
+
+  // -------------------------------------------
+  // SUBMIT BUTTON
+  // -------------------------------------------
 
   const submitButton = createElement(
     "button",
-    "Generate legal workflow",
+    "",
     "btn btn-primary"
   );
 
   submitButton.type = "submit";
+
   form.appendChild(submitButton);
+
+  // -------------------------------------------
+  // PRIVACY NOTICE
+  // -------------------------------------------
 
   const privacyNotice = createElement(
     "p",
-    "Demo mode: use fictional names and company data. " +
-    "No information is intentionally transmitted to " +
-    "a LexBridge server.",
+    "",
     "card-description"
   );
 
-  privacyNotice.style.marginTop = "12px";
+  privacyNotice.style.marginTop =
+    "12px";
 
   form.appendChild(privacyNotice);
 
+  // -------------------------------------------
+  // LIVE TRANSLATION
+  // -------------------------------------------
+
+  function updateTranslations() {
+    for (const field of fields) {
+      field.updateTranslation();
+    }
+
+    submitButton.textContent = t(
+      "corporate.generateWorkflow"
+    );
+
+    // These keys already exist in
+    // en.json, fr.json and de.json.
+    privacyNotice.textContent =
+      t("privacy.confidentiality") +
+      " " +
+      t("privacy.noServerStorage");
+  }
+
+  // Subscribe once for this form instance.
+  const unsubscribe = onLanguageChange(
+    updateTranslations
+  );
+
+  // Translate immediately using the
+  // current interface language.
+  updateTranslations();
+
+  // -------------------------------------------
+  // PUBLIC API
+  // -------------------------------------------
+
   return {
     form,
-    submitButton
+    submitButton,
+
+    updateTranslations,
+
+    destroy() {
+      unsubscribe();
+    }
   };
 }
 
+// ---------------------------------------------
+// READ CORPORATE MATTER
+// ---------------------------------------------
+
 /**
  * Read and normalise entered matter data.
+ *
+ * Important:
+ * - Values do not depend on UI language.
+ * - All original field names are preserved.
+ * - The workflow receives the same data shape.
  */
+
 export function readCorporateMatter(form) {
   if (!(form instanceof HTMLFormElement)) {
-    throw new Error("Invalid corporate form element.");
+    throw new Error(
+      t("validation.invalidForm")
+    );
   }
 
   const data = new FormData(form);
 
-  const fields = [
+  const fieldNames = [
     "companyName",
     "personName",
     "companyType",
@@ -164,26 +462,71 @@ export function readCorporateMatter(form) {
 
   const matter = {};
 
-  for (const field of fields) {
-    matter[field] = String(data.get(field) || "").trim();
+  for (const field of fieldNames) {
+    matter[field] = String(
+      data.get(field) || ""
+    ).trim();
   }
 
-  if (!matter.companyName || !matter.personName) {
+  // -------------------------------------------
+  // REQUIRED TEXT FIELDS
+  // -------------------------------------------
+
+  if (
+    !matter.companyName ||
+    !matter.personName
+  ) {
     throw new Error(
-      "Company name and person name are required."
+      t("validation.completeStep")
     );
   }
 
-  if (!COMPANY_TYPES.some(x => x.id === matter.companyType)) {
-    throw new Error("Unsupported company type.");
+  // -------------------------------------------
+  // COMPANY TYPE VALIDATION
+  // -------------------------------------------
+
+  const validCompanyType =
+    COMPANY_TYPES.some(
+      (item) =>
+        item.id === matter.companyType
+    );
+
+  if (!validCompanyType) {
+    throw new Error(
+      t("validation.invalidForm")
+    );
   }
 
-  if (!CANTONS.some(x => x.id === matter.canton)) {
-    throw new Error("Unsupported canton.");
+  // -------------------------------------------
+  // CANTON VALIDATION
+  // -------------------------------------------
+
+  const validCanton =
+    CANTONS.some(
+      (item) =>
+        item.id === matter.canton
+    );
+
+  if (!validCanton) {
+    throw new Error(
+      t("validation.invalidForm")
+    );
   }
 
-  if (!OPERATIONS.some(x => x.id === matter.operation)) {
-    throw new Error("Unsupported operation.");
+  // -------------------------------------------
+  // OPERATION VALIDATION
+  // -------------------------------------------
+
+  const validOperation =
+    OPERATIONS.some(
+      (item) =>
+        item.id === matter.operation
+    );
+
+  if (!validOperation) {
+    throw new Error(
+      t("validation.invalidForm")
+    );
   }
 
   return matter;
