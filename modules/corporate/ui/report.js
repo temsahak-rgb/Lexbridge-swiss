@@ -1,16 +1,15 @@
 
 /**
  * LexBridge — Corporate Report UI
- * Version: 0.4.0
+ * Version: 0.5.0
  *
- * Features:
- * - Workflow summary
- * - Paginated checklist (5 steps per group)
+ * Independent report sections:
+ * - Workflow overview and paginated checklist
  * - Legal considerations
  * - Official legal sources
- * - JSON export
  *
- * Preserves checklist page when step status changes.
+ * Maintains compatibility with the existing
+ * Corporate module and checklist engine.
  *
  * No legal interpretation or network requests.
  */
@@ -31,7 +30,7 @@ import {
 } from "./sources.js";
 
 // ---------------------------------------------
-// DOM HELPERS
+// DOM UTILITIES
 // ---------------------------------------------
 
 function el(tag, text, className = "") {
@@ -69,7 +68,9 @@ function downloadJSON(workflow) {
   link.click();
   link.remove();
 
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
 
 // ---------------------------------------------
@@ -111,8 +112,11 @@ function renderSummary(workflow) {
     "status-badge status-warning"
   );
 
-  const completed = Number(summary.completed) || 0;
-  const total = Number(summary.total) || 0;
+  const completed =
+    Number(summary.completed) || 0;
+
+  const total =
+    Number(summary.total) || 0;
 
   const progressText = el(
     "p",
@@ -122,8 +126,13 @@ function renderSummary(workflow) {
   progressText.style.marginTop = "12px";
 
   const progress = el("progress");
+
   progress.max = Math.max(total, 1);
-  progress.value = Math.min(completed, progress.max);
+  progress.value = Math.min(
+    completed,
+    progress.max
+  );
+
   progress.style.width = "100%";
 
   progress.setAttribute(
@@ -139,7 +148,9 @@ function renderSummary(workflow) {
     progress
   );
 
-  const missing = Array.isArray(summary.missingFields)
+  const missing = Array.isArray(
+    summary.missingFields
+  )
     ? summary.missingFields
     : [];
 
@@ -150,6 +161,7 @@ function renderSummary(workflow) {
     );
 
     warning.style.color = "#a52727";
+
     section.appendChild(warning);
   }
 
@@ -162,7 +174,6 @@ function renderSummary(workflow) {
 
 function renderWarnings(workflow) {
   const section = el("section", null, "card");
-  section.style.marginBottom = "18px";
 
   section.appendChild(
     el("h3", "Legal Considerations")
@@ -185,23 +196,33 @@ function renderWarnings(workflow) {
     return section;
   }
 
+  const introduction = el(
+    "p",
+    "Review the following considerations " +
+    "before preparing or filing documents.",
+    "card-description"
+  );
+
   const list = el("ul");
 
   for (const warning of warnings) {
-    const item = el(
-      "li",
+    const message =
       typeof warning === "string"
         ? warning
         : warning?.message ||
           warning?.text ||
-          "Review required"
-    );
+          "Review required";
 
-    item.style.marginBottom = "10px";
+    const item = el("li", message);
+    item.style.marginBottom = "12px";
+
     list.appendChild(item);
   }
 
-  section.appendChild(list);
+  section.append(
+    introduction,
+    list
+  );
 
   return section;
 }
@@ -210,12 +231,6 @@ function renderWarnings(workflow) {
 // REPORT CONTROLLER
 // ---------------------------------------------
 
-/**
- * Creates a controller for the corporate report.
- *
- * @param {object} context Shared app context.
- * @param {HTMLElement} container Report container.
- */
 export function createReportController(
   context,
   container
@@ -228,10 +243,96 @@ export function createReportController(
 
   let currentWorkflow = null;
   let pagination = null;
-  let summaryContainer = null;
+
+  // Stable section elements.
+  // These can be moved into independent pages
+  // without losing their event listeners.
+  const workflowSection = el(
+    "section",
+    null,
+    "lb-report-workflow"
+  );
+
+  const warningsSection = el(
+    "section",
+    null,
+    "lb-report-warnings"
+  );
+
+  const sourcesSection = el(
+    "section",
+    null,
+    "lb-report-sources"
+  );
+
+  const summaryContainer = el("div");
+  const checklistContainer = el("div");
+  const workflowFooter = el("div");
+
+  workflowSection.append(
+    summaryContainer,
+    checklistContainer,
+    workflowFooter
+  );
+
+  // Initially keep the existing stacked layout.
+  // The next step will move these elements into
+  // the Corporate Section Navigator.
+  container.append(
+    workflowSection,
+    warningsSection,
+    sourcesSection
+  );
 
   // -------------------------------------------
-  // HANDLE CHECKLIST STATUS CHANGES
+  // REPORT EXPORT ACTIONS
+  // -------------------------------------------
+
+  const exportButton = el(
+    "button",
+    "Export JSON",
+    "btn btn-secondary"
+  );
+
+  exportButton.type = "button";
+
+  exportButton.addEventListener(
+    "click",
+    () => {
+      if (currentWorkflow) {
+        downloadJSON(currentWorkflow);
+      }
+    }
+  );
+
+  const disclaimer = el(
+    "p",
+    "Preliminary rule-based legal workflow. " +
+    "Human review is required before any filing.",
+    "card-description"
+  );
+
+  disclaimer.style.marginTop = "15px";
+
+  workflowFooter.append(
+    exportButton,
+    disclaimer
+  );
+
+  // -------------------------------------------
+  // UPDATE SUMMARY ONLY
+  // -------------------------------------------
+
+  function refreshSummary() {
+    if (!currentWorkflow) return;
+
+    summaryContainer.replaceChildren(
+      renderSummary(currentWorkflow)
+    );
+  }
+
+  // -------------------------------------------
+  // CHECKLIST STATUS CHANGES
   // -------------------------------------------
 
   function changeStep(stepId, status) {
@@ -242,30 +343,26 @@ export function createReportController(
         );
       }
 
-      const updated = updateStepStatus(
+      currentWorkflow = updateStepStatus(
         currentWorkflow,
         stepId,
         status
       );
 
-      currentWorkflow = updated;
+      refreshSummary();
 
-      // Refresh only the summary.
-      // Do not recreate the whole report.
-      const newSummary = renderSummary(
-        currentWorkflow
-      );
-
-      summaryContainer.replaceChildren(newSummary);
-
-      // Refresh the active checklist group,
-      // preserving the current page number.
+      // Keep the current checklist page.
       if (pagination) {
-        pagination.updateWorkflow(currentWorkflow);
+        pagination.updateWorkflow(
+          currentWorkflow
+        );
       }
 
     } catch (error) {
-      if (typeof context?.reportError === "function") {
+      if (
+        typeof context?.reportError ===
+        "function"
+      ) {
         context.reportError(
           error,
           "Corporate checklist update"
@@ -277,22 +374,14 @@ export function createReportController(
   }
 
   // -------------------------------------------
-  // RENDER FULL REPORT
+  // RENDER INDEPENDENT SECTIONS
   // -------------------------------------------
 
   function render() {
-    if (!currentWorkflow) {
-      return;
-    }
+    if (!currentWorkflow) return;
 
-    container.replaceChildren();
-    container.hidden = false;
-
-    // 1. Workflow overview
-    summaryContainer = el("div");
-    summaryContainer.appendChild(
-      renderSummary(currentWorkflow)
-    );
+    // 1. Overview
+    refreshSummary();
 
     // 2. Paginated checklist
     pagination = createChecklistPagination({
@@ -301,58 +390,26 @@ export function createReportController(
       pageSize: 5
     });
 
+    checklistContainer.replaceChildren(
+      pagination.element
+    );
+
     // 3. Legal considerations
-    const warningsSection =
-      renderWarnings(currentWorkflow);
-
-    // 4. Official legal sources
-    const sourcesSection =
-      renderSources(currentWorkflow);
-
-    // 5. Export actions
-    const actions = el("div");
-    actions.style.marginTop = "18px";
-
-    const exportButton = el(
-      "button",
-      "Export JSON",
-      "btn btn-secondary"
+    warningsSection.replaceChildren(
+      renderWarnings(currentWorkflow)
     );
 
-    exportButton.type = "button";
-
-    exportButton.addEventListener(
-      "click",
-      () => {
-        if (currentWorkflow) {
-          downloadJSON(currentWorkflow);
-        }
-      }
+    // 4. Official sources
+    sourcesSection.replaceChildren(
+      renderSources(currentWorkflow)
     );
 
-    actions.appendChild(exportButton);
-
-    const disclaimer = el(
-      "p",
-      "Preliminary rule-based legal workflow. " +
-      "Human review is required before any filing.",
-      "card-description"
-    );
-
-    disclaimer.style.marginTop = "15px";
-
-    container.append(
-      summaryContainer,
-      pagination.element,
-      warningsSection,
-      sourcesSection,
-      actions,
-      disclaimer
-    );
+    // Existing interface compatibility.
+    container.hidden = false;
   }
 
   // -------------------------------------------
-  // PUBLIC CONTROLLER API
+  // PUBLIC API
   // -------------------------------------------
 
   return {
@@ -367,8 +424,6 @@ export function createReportController(
       }
 
       currentWorkflow = workflow;
-      pagination = null;
-
       render();
     },
 
@@ -376,12 +431,29 @@ export function createReportController(
       return currentWorkflow;
     },
 
+    /**
+     * Returns the actual section elements.
+     *
+     * Used by Corporate Section Navigator.
+     * Moving these nodes preserves their state.
+     */
+    getSections() {
+      return {
+        workflow: workflowSection,
+        warnings: warningsSection,
+        sources: sourcesSection
+      };
+    },
+
     clear() {
       currentWorkflow = null;
       pagination = null;
-      summaryContainer = null;
 
-      container.replaceChildren();
+      summaryContainer.replaceChildren();
+      checklistContainer.replaceChildren();
+      warningsSection.replaceChildren();
+      sourcesSection.replaceChildren();
+
       container.hidden = true;
     }
   };
