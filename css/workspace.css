@@ -1,14 +1,19 @@
 
 /*
  * LexBridge — Workspace Design System
- * Version: 0.1.0
+ * Version: 0.3.0
  *
+ * Consistent left sidebar on all devices.
  * Professional Swiss LegalTech interface.
- * Responsive, accessible, dependency-free.
  *
- * All styles are scoped to .lb-shell to avoid
- * affecting the existing LexBridge interface.
+ * No frameworks or external dependencies.
+ *
+ * Styles scoped to .lb-shell.
  */
+
+/* ---------------------------------------
+   DESIGN TOKENS & SHELL
+--------------------------------------- */
 
 .lb-shell {
   --lb-navy: #172c45;
@@ -23,64 +28,127 @@
   --lb-radius: 12px;
 
   display: flex;
+  flex-direction: row;
+  align-items: stretch;
+
   min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+
   background: var(--lb-background);
   color: var(--lb-text);
+
   font-family:
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     Arial,
     sans-serif;
+
   font-size: 16px;
   line-height: 1.6;
 }
 
+.lb-shell,
+.lb-shell *,
+.lb-shell *::before,
+.lb-shell *::after {
+  box-sizing: border-box;
+}
+
+/* Honor hidden on every screen. */
+.lb-shell [hidden] {
+  display: none !important;
+}
+
 /* ---------------------------------------
-   SIDEBAR
+   FIXED LEFT SIDEBAR
 --------------------------------------- */
 
 .lb-shell .lb-sidebar {
+  position: sticky;
+  top: 0;
+
   width: var(--lb-sidebar-width);
   flex: 0 0 var(--lb-sidebar-width);
-  background: var(--lb-surface);
-  border-right: 1px solid var(--lb-border);
-  padding: 24px 16px;
+
+  height: 100vh;
+  height: 100dvh;
+
+  min-width: 0;
+  min-height: 0;
+
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  padding: 24px 16px;
+
+  background: var(--lb-surface);
+
+  border-right: 1px solid var(--lb-border);
+  border-bottom: 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
+  z-index: 20;
 }
+
+/* ---------------------------------------
+   BRAND
+--------------------------------------- */
 
 .lb-shell .lb-brand {
   padding: 4px 12px 16px;
+
   border-bottom: 1px solid var(--lb-border);
 }
 
 .lb-shell .lb-brand-name {
   margin: 0;
+
   color: var(--lb-navy);
+
   font-size: 24px;
   font-weight: 750;
   letter-spacing: -0.6px;
+  line-height: 1.3;
 }
 
 .lb-shell .lb-brand-caption {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
+
   color: var(--lb-muted);
+
   font-size: 12px;
+  line-height: 1.5;
 }
+
+/* ---------------------------------------
+   SIDEBAR NAVIGATION
+--------------------------------------- */
 
 .lb-shell .lb-nav {
   display: flex;
   flex-direction: column;
+
+  width: 100%;
   gap: 6px;
+
+  overflow: visible;
 }
 
 .lb-shell .lb-nav-label {
+  margin: 0;
   padding: 8px 12px;
+
   font-size: 11px;
   font-weight: 700;
+
   color: var(--lb-muted);
+
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -88,23 +156,36 @@
 .lb-shell .lb-nav-item {
   display: flex;
   align-items: center;
+
   width: 100%;
-  gap: 12px;
   min-height: 48px;
+  flex: 0 0 auto;
+
+  gap: 12px;
   padding: 10px 14px;
+
   border: 1px solid transparent;
   border-radius: 9px;
+
   background: transparent;
   color: var(--lb-text);
-  font: inherit;
+
+  font-family: inherit;
   font-size: 15px;
   font-weight: 500;
+  line-height: 1.4;
+
   text-align: left;
   text-decoration: none;
+
+  white-space: normal;
+
   cursor: pointer;
+
   transition:
     background-color 0.15s ease,
-    color 0.15s ease;
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .lb-shell .lb-nav-item:hover:not(:disabled) {
@@ -114,35 +195,49 @@
 .lb-shell .lb-nav-item.is-active {
   color: var(--lb-blue);
   background: var(--lb-blue-light);
+
+  border-color: #d4e5f5;
   font-weight: 700;
 }
 
 .lb-shell .lb-nav-item:disabled {
   color: #8b95a3;
   cursor: not-allowed;
+  opacity: 0.8;
 }
 
 .lb-shell .lb-nav-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   width: 24px;
+  height: 24px;
   flex: 0 0 24px;
+
   font-size: 19px;
+  line-height: 1;
 }
 
 .lb-shell .lb-nav-note {
   margin-left: auto;
-  font-size: 11px;
+
   color: var(--lb-muted);
+
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .lb-shell .lb-sidebar-footer {
   margin-top: auto;
   padding: 14px 12px 0;
+
   border-top: 1px solid var(--lb-border);
+
   color: var(--lb-muted);
+
   font-size: 12px;
+  line-height: 1.5;
 }
 
 /* ---------------------------------------
@@ -150,14 +245,17 @@
 --------------------------------------- */
 
 .lb-shell .lb-main {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+
   padding: 32px clamp(20px, 4vw, 56px);
 }
 
 .lb-shell .lb-content {
   width: 100%;
   max-width: 1100px;
+
+  min-width: 0;
   margin: 0 auto;
 }
 
@@ -167,16 +265,21 @@
 
 .lb-shell .lb-eyebrow {
   margin: 0 0 8px;
+
   color: var(--lb-blue);
+
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.8px;
+
   text-transform: uppercase;
 }
 
 .lb-shell .lb-page-title {
   margin: 0;
+
   color: var(--lb-navy);
+
   font-size: clamp(25px, 3vw, 34px);
   font-weight: 750;
   line-height: 1.25;
@@ -184,9 +287,13 @@
 
 .lb-shell .lb-page-description {
   margin: 12px 0 0;
+
   max-width: 720px;
+
   color: var(--lb-muted);
+
   font-size: 16px;
+  line-height: 1.65;
 }
 
 /* ---------------------------------------
@@ -196,15 +303,20 @@
 .lb-shell .lb-panel {
   padding: 28px;
   margin-bottom: 22px;
+
   background: var(--lb-surface);
+
   border: 1px solid var(--lb-border);
   border-radius: var(--lb-radius);
+
   box-shadow: 0 2px 8px rgb(23 44 69 / 3%);
 }
 
 .lb-shell .lb-panel-title {
   margin: 0 0 12px;
+
   color: var(--lb-navy);
+
   font-size: 20px;
   font-weight: 700;
 }
@@ -216,6 +328,7 @@
 .lb-shell .lb-divider {
   height: 1px;
   margin: 22px 0;
+
   background: var(--lb-border);
 }
 
@@ -225,37 +338,47 @@
 
 .lb-shell .lb-dashboard-grid {
   display: grid;
+
   grid-template-columns:
     repeat(auto-fit, minmax(230px, 1fr));
+
   gap: 18px;
 }
 
 .lb-shell .lb-dashboard-card {
+  min-width: 0;
   padding: 24px;
+
   background: var(--lb-surface);
+
   border: 1px solid var(--lb-border);
   border-radius: var(--lb-radius);
 }
 
 .lb-shell .lb-dashboard-card h3 {
   margin: 0 0 10px;
+
   color: var(--lb-navy);
+
   font-size: 19px;
 }
 
 .lb-shell .lb-dashboard-card p {
   margin: 0 0 18px;
+
   color: var(--lb-muted);
+
   font-size: 15px;
 }
 
 /* ---------------------------------------
-   WIZARD / STEPS
+   WIZARD / WORKFLOW SECTIONS
 --------------------------------------- */
 
 .lb-shell .lb-steps {
   display: flex;
   flex-wrap: wrap;
+
   gap: 12px;
   margin: 0 0 24px;
 }
@@ -263,43 +386,72 @@
 .lb-shell .lb-step {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+
   gap: 9px;
+  min-height: 46px;
+
   padding: 9px 13px;
+
   border: 1px solid var(--lb-border);
   border-radius: 9px;
+
   background: var(--lb-surface);
   color: var(--lb-muted);
+
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
+
+  line-height: 1.4;
+  text-align: center;
+
+  cursor: pointer;
+}
+
+.lb-shell .lb-step:hover:not(:disabled) {
+  background: #f0f4f8;
 }
 
 .lb-shell .lb-step.is-current {
   border-color: var(--lb-blue);
   background: var(--lb-blue-light);
+
   color: var(--lb-blue);
 }
 
 .lb-shell .lb-step.is-complete {
   color: #21644c;
   background: #edf8f2;
+
   border-color: #c7e6d5;
+}
+
+.lb-shell .lb-step:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .lb-shell .lb-step-number {
   display: inline-flex;
-  width: 24px;
-  height: 24px;
   align-items: center;
   justify-content: center;
+
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+
   border-radius: 50%;
+
   background: #e9eef3;
   color: var(--lb-navy);
+
   font-size: 12px;
 }
 
 .lb-shell .lb-step.is-current .lb-step-number {
   background: var(--lb-blue);
-  color: #fff;
+  color: #ffffff;
 }
 
 /* ---------------------------------------
@@ -316,17 +468,13 @@
 .lb-shell textarea {
   max-width: 100%;
   min-height: 46px;
+
+  font-family: inherit;
   font-size: 16px;
 }
 
 .lb-shell button {
   min-height: 44px;
-}
-
-.lb-shell button,
-.lb-shell input,
-.lb-shell select,
-.lb-shell textarea {
   font-family: inherit;
 }
 
@@ -335,20 +483,36 @@
   outline-offset: 3px;
 }
 
+/* Prevent long content from widening pages. */
+.lb-shell .lb-module-container,
+.lb-shell .lb-corporate-workspace,
+.lb-shell .lb-section-panel,
+.lb-shell .lb-step-content,
+.lb-shell .lb-step-navigator-content {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 /* ---------------------------------------
    HELPER / STATUS
 --------------------------------------- */
 
 .lb-shell .lb-help-text {
   margin: 7px 0 0;
+
   color: var(--lb-muted);
+
   font-size: 14px;
+  line-height: 1.6;
 }
 
 .lb-shell .lb-status {
   padding: 14px 16px;
-  border-radius: 9px;
+
   border: 1px solid var(--lb-border);
+  border-radius: 9px;
+
   background: var(--lb-surface);
 }
 
@@ -368,66 +532,273 @@
 }
 
 /* ---------------------------------------
-   MOBILE / IPAD
+   TABLET / IPAD
+   Sidebar stays on the LEFT.
 --------------------------------------- */
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .lb-shell {
-    flex-direction: column;
+    --lb-sidebar-width: 210px;
+
+    flex-direction: row;
   }
 
   .lb-shell .lb-sidebar {
-    width: 100%;
-    flex: none;
-    padding: 14px 18px;
-    gap: 12px;
-    border-right: 0;
-    border-bottom: 1px solid var(--lb-border);
+    width: var(--lb-sidebar-width);
+    flex-basis: var(--lb-sidebar-width);
+
+    padding: 20px 12px;
+    gap: 20px;
+
+    border-right: 1px solid var(--lb-border);
+    border-bottom: 0;
   }
 
   .lb-shell .lb-brand {
-    padding: 0 4px 10px;
+    padding: 4px 10px 14px;
+  }
+
+  .lb-shell .lb-brand-name {
+    font-size: 22px;
   }
 
   .lb-shell .lb-nav {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 6px;
+    flex-direction: column;
   }
 
   .lb-shell .lb-nav-item {
-    flex: 0 0 auto;
-    width: auto;
-    white-space: nowrap;
+    width: 100%;
+    padding: 10px;
+    gap: 9px;
+
+    font-size: 14px;
   }
 
-  .lb-shell .lb-nav-label,
+  .lb-shell .lb-main {
+    padding: 24px 20px;
+  }
+}
+
+/* ---------------------------------------
+   SMALL TABLETS
+   Still LEFT, never top.
+--------------------------------------- */
+
+@media (max-width: 740px) {
+  .lb-shell {
+    --lb-sidebar-width: 160px;
+  }
+
+  .lb-shell .lb-sidebar {
+    width: var(--lb-sidebar-width);
+    flex-basis: var(--lb-sidebar-width);
+
+    padding: 16px 8px;
+    gap: 16px;
+  }
+
+  .lb-shell .lb-brand {
+    padding: 4px 8px 12px;
+  }
+
+  .lb-shell .lb-brand-name {
+    font-size: 19px;
+  }
+
+  .lb-shell .lb-brand-caption {
+    font-size: 11px;
+  }
+
+  .lb-shell .lb-nav-item {
+    padding: 9px 7px;
+    gap: 7px;
+
+    font-size: 13px;
+  }
+
+  .lb-shell .lb-nav-icon {
+    width: 20px;
+    flex-basis: 20px;
+
+    font-size: 17px;
+  }
+
+  .lb-shell .lb-nav-note,
   .lb-shell .lb-sidebar-footer {
     display: none;
   }
 
+  .lb-shell .lb-nav-label {
+    padding: 8px 7px;
+    font-size: 10px;
+  }
+
   .lb-shell .lb-main {
-    padding: 24px 18px;
+    padding: 20px 14px;
   }
-}
 
-@media (max-width: 560px) {
   .lb-shell .lb-panel {
-    padding: 18px;
+    padding: 20px;
   }
 
-  .lb-shell .lb-page-title {
-    font-size: 26px;
-  }
-
-  .lb-shell .lb-dashboard-grid {
-    grid-template-columns: 1fr;
+  .lb-shell .lb-steps {
+    gap: 8px;
   }
 
   .lb-shell .lb-step {
-    flex: 1 1 140px;
+    flex: 1 1 135px;
   }
 }
+
+/* ---------------------------------------
+   PHONE
+   Narrow LEFT sidebar with visible labels.
+--------------------------------------- */
+
+@media (max-width: 560px) {
+  .lb-shell {
+    --lb-sidebar-width: 108px;
+
+    flex-direction: row;
+  }
+
+  .lb-shell .lb-sidebar {
+    width: var(--lb-sidebar-width);
+    flex: 0 0 var(--lb-sidebar-width);
+
+    padding: 14px 5px;
+    gap: 14px;
+  }
+
+  .lb-shell .lb-brand {
+    width: 100%;
+
+    padding: 4px 2px 12px;
+    text-align: center;
+  }
+
+  .lb-shell .lb-brand-name {
+    font-size: 15px;
+    letter-spacing: -0.4px;
+  }
+
+  .lb-shell .lb-brand-caption {
+    display: none;
+  }
+
+  .lb-shell .lb-nav {
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .lb-shell .lb-nav-label {
+    display: none;
+  }
+
+  .lb-shell .lb-nav-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    min-height: 62px;
+
+    padding: 7px 3px;
+    gap: 3px;
+
+    font-size: 11px;
+    line-height: 1.25;
+    text-align: center;
+
+    white-space: normal;
+  }
+
+  .lb-shell .lb-nav-icon {
+    width: 24px;
+    height: 23px;
+
+    flex: 0 0 23px;
+    font-size: 19px;
+  }
+
+  .lb-shell .lb-nav-note {
+    display: none;
+  }
+
+  .lb-shell .lb-main {
+    min-width: 0;
+    padding: 16px 10px;
+  }
+
+  .lb-shell .lb-content {
+    min-width: 0;
+  }
+
+  .lb-shell .lb-page-title {
+    font-size: 23px;
+  }
+
+  .lb-shell .lb-page-description {
+    font-size: 14px;
+  }
+
+  .lb-shell .lb-panel,
+  .lb-shell .lb-dashboard-card {
+    padding: 15px;
+  }
+
+  .lb-shell .lb-dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .lb-shell .lb-step {
+    flex: 1 1 100%;
+    min-height: 44px;
+
+    font-size: 13px;
+  }
+
+  .lb-shell .lb-panel-title {
+    font-size: 18px;
+  }
+}
+
+/* ---------------------------------------
+   EXTRA SMALL PHONES
+   Keep the same left-side position.
+--------------------------------------- */
+
+@media (max-width: 380px) {
+  .lb-shell {
+    --lb-sidebar-width: 94px;
+  }
+
+  .lb-shell .lb-sidebar {
+    padding: 12px 3px;
+  }
+
+  .lb-shell .lb-brand-name {
+    font-size: 13px;
+  }
+
+  .lb-shell .lb-nav-item {
+    font-size: 10px;
+  }
+
+  .lb-shell .lb-main {
+    padding: 12px 8px;
+  }
+
+  .lb-shell .lb-page-title {
+    font-size: 21px;
+  }
+}
+
+/* ---------------------------------------
+   REDUCED MOTION
+--------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
   .lb-shell *,
@@ -435,5 +806,6 @@
   .lb-shell *::after {
     transition: none !important;
     animation: none !important;
+    scroll-behavior: auto !important;
   }
 }
