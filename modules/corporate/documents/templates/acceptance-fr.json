@@ -1,0 +1,46 @@
+
+{
+  "id": "CH-CORPORATE-ACCEPTANCE-FR",
+  "version": "0.1.0",
+  "schemaVersion": "1.0",
+  "documentType": "mandate_acceptance",
+  "jurisdiction": "CH",
+  "language": "fr",
+  "status": "preliminary",
+  "title": "Déclaration d'acceptation de mandat — {{companyName}}",
+  "description": "Projet de déclaration d'acceptation d'un mandat au sein d'une société suisse.",
+  "appliesTo": {
+    "companyTypes": ["SA", "SARL"],
+    "operations": ["appoint"],
+    "cantons": ["VD", "GE", "ZH", "BS"]
+  },
+  "requiredFields": [
+    "companyName",
+    "personName",
+    "roleName",
+    "appointmentDate",
+    "city",
+    "documentDate"
+  ],
+  "content": "DÉCLARATION D'ACCEPTATION DE MANDAT\n\nSociété : {{companyName}}\n\nJe soussigné(e), {{personName}}, déclare accepter le mandat de {{roleName}} au sein de la société {{companyName}}, conformément à la décision de nomination du {{appointmentDate}}.\n\nLa présente déclaration est établie afin de confirmer mon acceptation du mandat susmentionné et, le cas échéant, de servir de pièce justificative dans le cadre des formalités auprès du registre du commerce compétent.\n\nFait à {{city}}, le {{documentDate}}.\n\nSignature : ______________________________\n\n{{personName}}",
+  "sourceIds": [
+    "CH-CO",
+    "CH-ORC",
+    "VD-SA-MOD",
+    "GE-MODIFICATION",
+    "ZH-AG-BOARD",
+    "ZH-GMBH-MGMT",
+    "BS-PERSONNEL"
+  ],
+  "reviewRequirements": [
+    "Verify the person's full legal name.",
+    "Verify the exact corporate role being accepted.",
+    "Confirm that the appointment decision has been validly adopted.",
+    "Verify the appointment date against the supporting decision.",
+    "Check the applicable cantonal registry requirements.",
+    "Determine whether a separate acceptance letter is necessary.",
+    "Check the applicable signature and certification formalities.",
+    "Obtain human legal review before using the document."
+  ],
+  "legalNotice": "Draft template only. Not a filing-ready legal instrument. The document must be reviewed and signed as required by applicable Swiss law and the competent commercial registry."
+}
