@@ -1,0 +1,246 @@
+
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "0.1.0",
+  "jurisdiction": "CH",
+  "level": "cantonal_procedure",
+  "canton": "ZH",
+  "name": "Zurich",
+  "language": "de",
+  "status": "preliminary",
+  "lastReviewed": "2026-11-09",
+  "authority": {
+    "name": "Handelsregisteramt des Kantons Zürich",
+    "location": "Zürich",
+    "website": "https://www.zh.ch/de/wirtschaft-arbeit/handelsregister.html"
+  },
+  "scope": {
+    "companyTypes": ["SA", "SARL"],
+    "operations": ["appoint", "remove", "signature"]
+  },
+  "sources": [
+    {
+      "id": "ZH-GENERAL",
+      "title": "Zurich - Commercial Register Office",
+      "url": "https://www.zh.ch/de/wirtschaft-arbeit/handelsregister.html",
+      "reference": "Official commercial register guidance",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "ZH-AG-BOARD",
+      "title": "Zurich - Appoint, change or remove AG board members",
+      "url": "https://www.zh.ch/de/wirtschaft-arbeit/handelsregister/aktiengesellschaft/mitglieder-eintragen-aendern-loeschen.html",
+      "reference": "AG board member changes",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "ZH-GMBH-MGMT",
+      "title": "Zurich - Appoint, change or remove GmbH managers",
+      "url": "https://www.zh.ch/de/wirtschaft-arbeit/handelsregister/gmbh/geschaeftsfuehrer-eintragen-aendern-loeschen.html",
+      "reference": "GmbH management changes",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "ZH-AG-SIGN",
+      "title": "Zurich - Change AG authorised signatories",
+      "url": "https://www.zh.ch/de/wirtschaft-arbeit/handelsregister/aktiengesellschaft/personalmutation-zeichnungsberechtigte.html",
+      "reference": "Additional AG authorised signatories",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "ZH-GMBH-SIGN",
+      "title": "Zurich - Change GmbH authorised signatories",
+      "url": "https://www.zh.ch/de/wirtschaft-arbeit/handelsregister/gmbh/personalmutation-zeichnungsberechtigte.html",
+      "reference": "Additional GmbH authorised signatories",
+      "verifiedAt": "2026-11-09"
+    }
+  ],
+  "requiredFields": [
+    "companyName",
+    "companyType",
+    "canton",
+    "operation",
+    "personName"
+  ],
+  "steps": [
+    {
+      "id": "zh-registry-review",
+      "title": "Review Zurich registry instructions",
+      "description": "Consult the official guidance for the company's legal form and the selected change.",
+      "required": true,
+      "sourceIds": ["ZH-GENERAL"]
+    },
+    {
+      "id": "zh-personnel-application",
+      "title": "Prepare personnel change application",
+      "description": "Prepare the Anmeldung Personalmutationen using the applicable Zurich form and authorised signatures.",
+      "required": true,
+      "sourceIds": ["ZH-AG-BOARD", "ZH-GMBH-MGMT"]
+    },
+    {
+      "id": "zh-document-formalities",
+      "title": "Review document formalities",
+      "description": "Check original signatures, certified specimen signatures and identity documentation where required.",
+      "required": true,
+      "sourceIds": ["ZH-AG-BOARD", "ZH-GMBH-MGMT"]
+    },
+    {
+      "id": "zh-filing-method",
+      "title": "Select a permitted filing method",
+      "description": "Choose an applicable online, postal or in-person procedure and verify its document-signing requirements.",
+      "required": true,
+      "sourceIds": ["ZH-GENERAL"]
+    }
+  ],
+  "companyTypes": {
+    "SA": {
+      "steps": [
+        {
+          "id": "zh-sa-board-structure",
+          "title": "Review AG board structure",
+          "description": "Check the general meeting's board election, the board's constitution and the company's articles of association.",
+          "required": true,
+          "sourceIds": ["ZH-AG-BOARD"]
+        }
+      ],
+      "warnings": [
+        "The competent body for electing the board chair may depend on the articles of association.",
+        "If several board members are provided for, the company must designate a chair in accordance with applicable rules."
+      ]
+    },
+    "SARL": {
+      "steps": [
+        {
+          "id": "zh-sarl-management-structure",
+          "title": "Review GmbH management structure",
+          "description": "Check the members' meeting decision, management chair arrangements and signing powers.",
+          "required": true,
+          "sourceIds": ["ZH-GMBH-MGMT"]
+        }
+      ],
+      "warnings": [
+        "The articles of association affect who appoints the chair of management and determines signing authority.",
+        "Where there are several managers, review the requirement to designate a chair."
+      ]
+    }
+  },
+  "operations": {
+    "appoint": {
+      "steps": [
+        {
+          "id": "zh-appointment-acceptance",
+          "title": "Obtain acceptance of appointment",
+          "description": "Review the Wahlannahmeerklärung for the newly appointed board member or manager.",
+          "required": true,
+          "sourceIds": ["ZH-AG-BOARD", "ZH-GMBH-MGMT"]
+        },
+        {
+          "id": "zh-appointment-minutes",
+          "title": "Review appointment minutes",
+          "description": "Check the applicable general meeting or members' meeting minutes and any additional board or management resolution.",
+          "required": true,
+          "sourceIds": ["ZH-AG-BOARD", "ZH-GMBH-MGMT"]
+        },
+        {
+          "id": "zh-new-person-identity",
+          "title": "Verify identity documents",
+          "description": "Review an identity card, passport or applicable foreign national identity document for the person being registered.",
+          "required": true,
+          "sourceIds": ["ZH-AG-BOARD", "ZH-GMBH-MGMT"]
+        },
+        {
+          "id": "zh-new-person-signature",
+          "title": "Verify certified specimen signature",
+          "description": "Check whether the newly registered person's specimen signature must be certified and determine the accepted certification method.",
+          "required": true,
+          "sourceIds": ["ZH-AG-BOARD", "ZH-GMBH-MGMT"]
+        }
+      ],
+      "warnings": [
+        "Zurich provides separate appointment templates for AG board members and GmbH managers.",
+        "Registry documents may become public. Avoid unnecessary sensitive personal information."
+      ]
+    },
+    "remove": {
+      "steps": [
+        {
+          "id": "zh-departure-evidence",
+          "title": "Review departure documentation",
+          "description": "Check the general meeting or members' meeting decision for removal, or resignation evidence where applicable.",
+          "required": true,
+          "sourceIds": ["ZH-AG-BOARD", "ZH-GMBH-MGMT"]
+        },
+        {
+          "id": "zh-remove-signing-rights",
+          "title": "Check removal of signing powers",
+          "description": "Determine whether existing registered representative authority must be cancelled or amended.",
+          "required": true,
+          "sourceIds": ["ZH-AG-BOARD", "ZH-GMBH-MGMT"]
+        },
+        {
+          "id": "zh-continuing-representation",
+          "title": "Check continuing representation",
+          "description": "Verify that the company's management and representation remain legally compliant.",
+          "required": true,
+          "sourceIds": ["ZH-GENERAL"]
+        }
+      ],
+      "warnings": [
+        "A resignation letter may be necessary if resignation was not recorded at the relevant corporate meeting.",
+        "Departure from office must be distinguished from the cancellation of a separate signing authority."
+      ]
+    },
+    "signature": {
+      "steps": [
+        {
+          "id": "zh-signature-decision",
+          "title": "Review decision on signing authority",
+          "description": "Check the board or management decision that supports the registration, amendment or cancellation of signing powers.",
+          "required": true,
+          "sourceIds": ["ZH-AG-SIGN", "ZH-GMBH-SIGN"]
+        },
+        {
+          "id": "zh-signature-mode",
+          "title": "Confirm the signing arrangement",
+          "description": "Verify the intended individual or collective signing authority.",
+          "required": true,
+          "sourceIds": ["ZH-AG-SIGN", "ZH-GMBH-SIGN"]
+        },
+        {
+          "id": "zh-signatory-identity",
+          "title": "Check new signatory documents",
+          "description": "For newly registered signatories, verify identity documentation and a certified specimen signature where required.",
+          "required": true,
+          "sourceIds": ["ZH-AG-SIGN", "ZH-GMBH-SIGN"]
+        }
+      ],
+      "warnings": [
+        "Different documentation may apply to adding a new signatory versus amending or removing an existing one.",
+        "Separate Zurich instructions exist for additional authorised signatories of AG and GmbH companies."
+      ]
+    }
+  },
+  "filing": {
+    "channels": ["online", "post", "in_person"],
+    "onlineRequirements": [
+      "Prepare documents in the required electronic format, including PDF/A where applicable.",
+      "Obtain qualified electronic signatures from the relevant signatories.",
+      "Use a federally recognised electronic delivery platform accepted by the registry.",
+      "Check any additional requirements for electronically certified specimen signatures."
+    ],
+    "postalAddress": [
+      "Handelsregisteramt",
+      "Schöntalstrasse 5",
+      "Postfach",
+      "8090 Zürich",
+      "Switzerland"
+    ]
+  },
+  "warnings": [
+    "This dataset provides preliminary workflow guidance only.",
+    "Check the latest official Zurich instructions before filing.",
+    "The required documents depend on the legal form, type of change and signing arrangements.",
+    "Commercial register supporting documents may be publicly accessible.",
+    "All documents must undergo human legal review before submission."
+  ]
+}
