@@ -1,15 +1,15 @@
 
 /**
  * LexBridge — Application Shell
- * Version: 0.2.0
+ * Version: 0.3.0
  *
  * Features:
- * - Consistent left sidebar
+ * - Permanent left sidebar on all devices
  * - Dashboard and Corporate workspace
+ * - Language selector at the top right
  * - English, French and German interface
- * - Language selector in the sidebar
- * - Preserves existing module state
- * - Accessible navigation
+ * - Preserves mounted corporate module state
+ * - Accessible navigation and language control
  *
  * Framework-free ES module.
  * Compatible with GitHub Pages.
@@ -19,13 +19,11 @@
 
 import {
   initializeI18n,
+  getLanguage,
+  setLanguage,
   onLanguageChange,
   t
 } from "./i18n.js";
-
-import {
-  createLanguageSwitcher
-} from "./language-switcher.js";
 
 // ---------------------------------------------
 // DOM UTILITIES
@@ -101,18 +99,21 @@ function createNavButton({
 
   const labelNode = el(
     "span",
-    t(translationKey)
+    ""
   );
 
   const note = disabled
     ? el(
         "span",
-        t("navigation.comingSoon"),
+        "",
         "lb-nav-note"
       )
     : null;
 
-  button.append(iconNode, labelNode);
+  button.append(
+    iconNode,
+    labelNode
+  );
 
   if (note) {
     button.appendChild(note);
@@ -183,13 +184,13 @@ function createDashboard(onNavigate) {
     description
   );
 
-  // Dashboard cards
-
   const grid = el(
     "div",
     null,
     "lb-dashboard-grid"
   );
+
+  // Corporate card
 
   const corporateCard = el(
     "article",
@@ -198,7 +199,6 @@ function createDashboard(onNavigate) {
   );
 
   const corporateTitle = el("h3");
-
   const corporateDescription = el("p");
 
   const openButton = el(
@@ -229,7 +229,6 @@ function createDashboard(onNavigate) {
   );
 
   const futureTitle = el("h3");
-
   const futureDescription = el("p");
 
   futureCard.append(
@@ -241,8 +240,6 @@ function createDashboard(onNavigate) {
     corporateCard,
     futureCard
   );
-
-  // Disclaimer
 
   const disclaimer = el(
     "p",
@@ -296,15 +293,220 @@ function createDashboard(onNavigate) {
 }
 
 // ---------------------------------------------
+// TOP-RIGHT LANGUAGE SELECTOR
+// ---------------------------------------------
+
+/**
+ * Creates a compact, native language selector.
+ *
+ * The control is placed in the top-right area
+ * of the main workspace, not in the sidebar.
+ *
+ * Native select works with mouse, keyboard,
+ * touch screens, iPad and mobile browsers.
+ *
+ * Document language is not affected.
+ */
+function createTopLanguageSelector() {
+  const wrapper = el(
+    "div",
+    null,
+    "lb-top-language-selector"
+  );
+
+  wrapper.style.display = "inline-flex";
+  wrapper.style.alignItems = "center";
+  wrapper.style.justifyContent = "flex-end";
+  wrapper.style.gap = "8px";
+  wrapper.style.maxWidth = "100%";
+
+  const globe = el(
+    "span",
+    "🌐"
+  );
+
+  globe.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  globe.style.fontSize = "20px";
+  globe.style.lineHeight = "1";
+
+  const select = el(
+    "select",
+    null,
+    "lb-language-select"
+  );
+
+  select.id = "lb-interface-language";
+  select.name = "interfaceLanguage";
+
+  select.style.width = "auto";
+  select.style.minWidth = "76px";
+  select.style.minHeight = "44px";
+  select.style.padding = "8px 12px";
+
+  select.style.border =
+    "1px solid var(--lb-border, #dce3ea)";
+
+  select.style.borderRadius = "9px";
+  select.style.backgroundColor = "#ffffff";
+  select.style.color =
+    "var(--lb-navy, #172c45)";
+
+  select.style.fontFamily = "inherit";
+  select.style.fontSize = "14px";
+  select.style.fontWeight = "700";
+  select.style.cursor = "pointer";
+
+  const languages = [
+    {
+      code: "en",
+      label: "EN — English"
+    },
+    {
+      code: "fr",
+      label: "FR — Français"
+    },
+    {
+      code: "de",
+      label: "DE — Deutsch"
+    }
+  ];
+
+  for (const language of languages) {
+    const option = el(
+      "option",
+      language.label
+    );
+
+    option.value = language.code;
+
+    select.appendChild(option);
+  }
+
+  const screenReaderLabel = el(
+    "label",
+    "",
+    "lb-language-accessible-label"
+  );
+
+  screenReaderLabel.htmlFor = select.id;
+
+  // Visually hidden but available to
+  // screen readers and accessibility tools.
+  screenReaderLabel.style.position = "absolute";
+  screenReaderLabel.style.width = "1px";
+  screenReaderLabel.style.height = "1px";
+  screenReaderLabel.style.padding = "0";
+  screenReaderLabel.style.margin = "-1px";
+  screenReaderLabel.style.overflow = "hidden";
+  screenReaderLabel.style.clip = "rect(0, 0, 0, 0)";
+  screenReaderLabel.style.whiteSpace = "nowrap";
+  screenReaderLabel.style.border = "0";
+
+  wrapper.append(
+    globe,
+    screenReaderLabel,
+    select
+  );
+
+  let busy = true;
+  let destroyed = false;
+
+  select.disabled = true;
+
+  function refresh() {
+    if (destroyed) return;
+
+    const current = getLanguage();
+
+    select.value = current;
+
+    const accessibleName =
+      t("language.interfaceLanguage");
+
+    screenReaderLabel.textContent =
+      accessibleName;
+
+    select.title = accessibleName;
+    select.setAttribute(
+      "aria-label",
+      accessibleName
+    );
+
+    select.disabled = busy;
+  }
+
+  async function handleChange() {
+    if (busy || destroyed) return;
+
+    const nextLanguage = select.value;
+    const previousLanguage = getLanguage();
+
+    if (nextLanguage === previousLanguage) {
+      return;
+    }
+
+    busy = true;
+    refresh();
+
+    try {
+      await setLanguage(nextLanguage);
+    } catch (error) {
+      reportShellError(
+        error,
+        "Interface language change"
+      );
+
+      // Restore the selected option if
+      // the requested language failed to load.
+      select.value = previousLanguage;
+    } finally {
+      busy = false;
+      refresh();
+    }
+  }
+
+  select.addEventListener(
+    "change",
+    handleChange
+  );
+
+  function setReady() {
+    busy = false;
+    refresh();
+  }
+
+  refresh();
+
+  return {
+    element: wrapper,
+    refresh,
+    setReady,
+
+    destroy() {
+      destroyed = true;
+
+      select.removeEventListener(
+        "change",
+        handleChange
+      );
+
+      wrapper.remove();
+    }
+  };
+}
+
+// ---------------------------------------------
 // APPLICATION SHELL
 // ---------------------------------------------
 
 /**
- * Create the LexBridge workspace.
+ * Create the LexBridge application shell.
  *
- * @param {HTMLElement} host
- *
- * Returns:
+ * Public API:
  * - moduleContainer
  * - navigate(page)
  * - showCorporate()
@@ -321,7 +523,7 @@ export function createAppShell(host) {
   let destroyed = false;
 
   // -------------------------------------------
-  // ROOT SHELL
+  // ROOT
   // -------------------------------------------
 
   const shell = el(
@@ -373,11 +575,6 @@ export function createAppShell(host) {
     "lb-nav"
   );
 
-  navigation.setAttribute(
-    "aria-label",
-    "Main navigation"
-  );
-
   const workspaceLabel = el(
     "p",
     "",
@@ -426,15 +623,8 @@ export function createAppShell(host) {
   );
 
   // -------------------------------------------
-  // LANGUAGE SELECTOR
+  // SIDEBAR FOOTER
   // -------------------------------------------
-
-  const languageSwitcher =
-    createLanguageSwitcher({
-      onError(error, context) {
-        reportShellError(error, context);
-      }
-    });
 
   const sidebarFooter = el(
     "div",
@@ -442,20 +632,15 @@ export function createAppShell(host) {
     "lb-sidebar-footer"
   );
 
-  // Keep language selection near the
-  // bottom of the sidebar.
-  languageSwitcher.element.style.marginTop =
-    "auto";
-
+  // No language selector in the sidebar.
   sidebar.append(
     brand,
     navigation,
-    languageSwitcher.element,
     sidebarFooter
   );
 
   // -------------------------------------------
-  // MAIN WORKSPACE
+  // MAIN CONTENT
   // -------------------------------------------
 
   const main = el(
@@ -470,6 +655,32 @@ export function createAppShell(host) {
     "div",
     null,
     "lb-content"
+  );
+
+  // -------------------------------------------
+  // TOP BAR
+  // -------------------------------------------
+
+  const topBar = el(
+    "div",
+    null,
+    "lb-topbar"
+  );
+
+  topBar.style.display = "flex";
+  topBar.style.alignItems = "center";
+  topBar.style.justifyContent = "flex-end";
+  topBar.style.gap = "12px";
+
+  topBar.style.width = "100%";
+  topBar.style.minHeight = "48px";
+  topBar.style.marginBottom = "24px";
+
+  const languageSelector =
+    createTopLanguageSelector();
+
+  topBar.appendChild(
+    languageSelector.element
   );
 
   // -------------------------------------------
@@ -512,9 +723,8 @@ export function createAppShell(host) {
     corporateDescription
   );
 
-  // Existing legal modules are mounted here.
-  // Never recreate this element when
-  // changing interface language.
+  // Stable container:
+  // Never replace it during language changes.
   const moduleContainer = el(
     "div",
     null,
@@ -533,6 +743,7 @@ export function createAppShell(host) {
   const dashboard = createDashboard(navigate);
 
   content.append(
+    topBar,
     dashboard.element,
     corporatePage
   );
@@ -548,12 +759,12 @@ export function createAppShell(host) {
   // PAGE NAVIGATION
   // -------------------------------------------
 
+  let activePage = "dashboard";
+
   const activeButtons = [
     dashboardNav.element,
     corporateNav.element
   ];
-
-  let activePage = "dashboard";
 
   function navigate(page) {
     if (
@@ -606,7 +817,7 @@ export function createAppShell(host) {
   );
 
   // -------------------------------------------
-  // UPDATE ALL SHELL TRANSLATIONS
+  // TRANSLATIONS
   // -------------------------------------------
 
   function updateTranslations() {
@@ -647,14 +858,10 @@ export function createAppShell(host) {
     corporateDescription.textContent =
       t("corporate.description");
 
-    languageSwitcher.refresh();
+    languageSelector.refresh();
   }
 
-  // -------------------------------------------
-  // LANGUAGE CHANGE SUBSCRIPTION
-  // -------------------------------------------
-
-  const unsubscribe =
+  const unsubscribeLanguage =
     onLanguageChange(updateTranslations);
 
   // -------------------------------------------
@@ -666,15 +873,21 @@ export function createAppShell(host) {
   navigate("dashboard");
   updateTranslations();
 
-  // Load the saved or browser language.
-  // Keep the shell synchronous for compatibility
-  // with the existing js/app.js bootstrap.
-  initializeI18n().catch((error) => {
-    reportShellError(
-      error,
-      "Language initialization"
-    );
-  });
+  // Initialize asynchronously to preserve
+  // compatibility with existing js/app.js.
+  initializeI18n()
+    .catch((error) => {
+      reportShellError(
+        error,
+        "Language initialization"
+      );
+    })
+    .finally(() => {
+      if (destroyed) return;
+
+      languageSelector.setReady();
+      updateTranslations();
+    });
 
   // -------------------------------------------
   // PUBLIC API
@@ -698,8 +911,8 @@ export function createAppShell(host) {
 
       destroyed = true;
 
-      unsubscribe();
-      languageSwitcher.destroy();
+      unsubscribeLanguage();
+      languageSelector.destroy();
 
       shell.remove();
     }
