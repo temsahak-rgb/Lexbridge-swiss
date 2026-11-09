@@ -1,0 +1,14 @@
+
+{
+  "version": "0.1.0",
+  "modules": [
+    {
+      "id": "corporate",
+      "name": "Swiss Corporate Governance",
+      "description": "Corporate changes and commercial registry workflows under Swiss law.",
+      "enabled": true,
+      "jurisdiction": "CH",
+      "category": "corporate"
+    }
+  ]
+}
