@@ -1,10 +1,10 @@
 
 /**
  * LexBridge — Corporate Module Entry Point
- * Version: 0.4.0
+ * Version: 0.5.0
  *
  * Connects:
- * - Corporate workflow form
+ * - Corporate Matter Wizard
  * - Legal workflow service
  * - Workflow report
  * - Document generator
@@ -20,6 +20,10 @@ import {
 } from "./ui/form.js";
 
 import {
+  createMatterWizard
+} from "./ui/matter-wizard.js";
+
+import {
   createReportController
 } from "./ui/report.js";
 
@@ -33,16 +37,19 @@ import {
 
 /**
  * Called by the LexBridge Module Loader.
+ *
+ * @param {object} context Shared application context.
+ * @param {HTMLElement} container Corporate module container.
  */
 export async function mount(context, container) {
-  if (!container) {
+  if (!(container instanceof HTMLElement)) {
     throw new Error(
       "Corporate module container is missing."
     );
   }
 
   // ---------------------------------------
-  // CORPORATE FORM
+  // MATTER FORM
   // ---------------------------------------
 
   const panel = document.createElement("section");
@@ -50,18 +57,17 @@ export async function mount(context, container) {
   panel.style.marginTop = "24px";
 
   const heading = document.createElement("h2");
-  heading.textContent = "Corporate Governance";
+  heading.textContent = "New Corporate Matter";
 
   const description = document.createElement("p");
   description.className = "card-description";
   description.textContent =
-    "Prepare preliminary Swiss corporate registry " +
-    "workflows using federal and cantonal legal data.";
+    "Enter the company information step by step. " +
+    "You can return to earlier steps without " +
+    "losing your entries.";
 
   const { form, submitButton } =
     createCorporateForm();
-
-  panel.append(heading, description, form);
 
   // ---------------------------------------
   // WORKFLOW REPORT
@@ -102,7 +108,7 @@ export async function mount(context, container) {
     );
 
   // ---------------------------------------
-  // SUBMIT CORPORATE WORKFLOW
+  // WORKFLOW SUBMISSION
   // ---------------------------------------
 
   form.addEventListener(
@@ -114,25 +120,35 @@ export async function mount(context, container) {
       submitButton.textContent =
         "Generating workflow...";
 
-      // Prevent old document drafts from
-      // remaining linked to a new case.
       documentController.clear();
 
       try {
-        const matter = readCorporateMatter(form);
+        const matter =
+          readCorporateMatter(form);
 
         const workflow =
           await createCorporateWorkflow(matter);
 
-        reportController.setWorkflow(workflow);
+        reportController.setWorkflow(
+          workflow
+        );
 
-        // Enable documents only for appointment.
-        documentController.updateMatter(matter);
+        // Appointment documents only.
+        documentController.updateMatter(
+          matter
+        );
 
         context.setStatus(
-          "Corporate workflow generated successfully.",
+          "Corporate workflow generated. " +
+          "Review the legal checklist below.",
           "success"
         );
+
+        // Bring the generated report into view.
+        reportContainer.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
 
       } catch (error) {
         context.reportError(
@@ -151,6 +167,25 @@ export async function mount(context, container) {
           "Generate legal workflow";
       }
     }
+  );
+
+  // ---------------------------------------
+  // ACTIVATE MATTER WIZARD
+  // ---------------------------------------
+
+  const matterWizard =
+    createMatterWizard(
+      form,
+      submitButton
+    );
+
+  // Preserve a reference for future navigation.
+  panel.dataset.component = "matter-wizard";
+
+  panel.append(
+    heading,
+    description,
+    form
   );
 
   // ---------------------------------------
