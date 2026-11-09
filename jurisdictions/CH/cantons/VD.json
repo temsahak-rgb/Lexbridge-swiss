@@ -1,0 +1,190 @@
+
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "0.1.0",
+  "jurisdiction": "CH",
+  "level": "cantonal_procedure",
+  "canton": "VD",
+  "name": "Vaud",
+  "language": "fr",
+  "status": "preliminary",
+  "lastReviewed": "2026-11-09",
+  "authority": {
+    "name": "Office cantonal du registre du commerce",
+    "location": "Moudon, Vaud",
+    "website": "https://www.vd.ch/economie/registre-du-commerce/sinscrire-modifier-radier-une-inscription-au-registre-du-commerce"
+  },
+  "scope": {
+    "companyTypes": ["SA", "SARL"],
+    "operations": ["appoint", "remove", "signature"]
+  },
+  "sources": [
+    {
+      "id": "VD-GENERAL",
+      "title": "Vaud — General commercial register guidance",
+      "url": "https://www.vd.ch/economie/registre-du-commerce/sinscrire-modifier-radier-une-inscription-au-registre-du-commerce",
+      "reference": "Cantonal commercial register instructions",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "VD-SA",
+      "title": "Vaud — Société anonyme (SA)",
+      "url": "https://www.vd.ch/economie/registre-du-commerce/sinscrire-modifier-radier-une-inscription-au-registre-du-commerce/societe-anonyme-sa",
+      "reference": "Changes to directors and signing powers",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "VD-SA-MOD",
+      "title": "Vaud — Modify an SA registration",
+      "url": "https://www.vd.ch/prestation/modifier-linscription-dune-societe-anonyme-au-registre-du-commerce",
+      "reference": "Modification application and supporting documents",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "VD-SARL-MOD",
+      "title": "Vaud — Modify a Sàrl registration",
+      "url": "https://www.vd.ch/prestation/modifier-linscription-dune-societe-a-responsabilite-limitee-au-registre-du-commerce",
+      "reference": "Modification application and supporting documents",
+      "verifiedAt": "2026-11-09"
+    }
+  ],
+  "requiredFields": [
+    "companyName",
+    "companyType",
+    "canton",
+    "operation",
+    "personName"
+  ],
+  "steps": [
+    {
+      "id": "vd-registry-instructions",
+      "title": "Review Vaud commercial register instructions",
+      "description": "Consult the current Vaud guidance for the company's legal form and requested change.",
+      "required": true,
+      "sourceIds": ["VD-GENERAL"]
+    },
+    {
+      "id": "vd-requisition",
+      "title": "Prepare the modification application",
+      "description": "Prepare a French-language réquisition de modification containing the relevant information and authorised signatures.",
+      "required": true,
+      "sourceIds": ["VD-SA-MOD", "VD-SARL-MOD"]
+    },
+    {
+      "id": "vd-minutes",
+      "title": "Review the supporting decision record",
+      "description": "Determine the applicable requirements for original minutes or an acceptable extract of the decision.",
+      "required": true,
+      "sourceIds": ["VD-GENERAL"]
+    },
+    {
+      "id": "vd-filing-channel",
+      "title": "Verify permitted submission method",
+      "description": "The Vaud registry does not accept ordinary email modification applications. Check the permitted counter or postal submission procedure.",
+      "required": true,
+      "sourceIds": ["VD-SA-MOD", "VD-SARL-MOD"]
+    }
+  ],
+  "companyTypes": {
+    "SA": {
+      "steps": [
+        {
+          "id": "vd-sa-signature",
+          "title": "Check signatures on the SA application",
+          "description": "Verify signatures according to the company's registered representation and the applicable cantonal instructions.",
+          "required": true,
+          "sourceIds": ["VD-SA", "VD-SA-MOD"]
+        }
+      ],
+      "warnings": [
+        "Certain modifications to the articles of association require a notarial procedure."
+      ]
+    },
+    "SARL": {
+      "steps": [
+        {
+          "id": "vd-sarl-signature",
+          "title": "Check signatures on the Sàrl application",
+          "description": "Verify signatures by the competent managers or authorised signatories under the applicable instructions.",
+          "required": true,
+          "sourceIds": ["VD-SARL-MOD"]
+        }
+      ],
+      "warnings": [
+        "Use Sàrl-specific instructions rather than assuming that SA appointment documents are identical."
+      ]
+    }
+  },
+  "operations": {
+    "appoint": {
+      "steps": [
+        {
+          "id": "vd-appointment-evidence",
+          "title": "Check appointment evidence",
+          "description": "Review the competent body's appointment decision, mandate acceptance and any supporting identity or signature documents.",
+          "required": true,
+          "sourceIds": ["VD-SA", "VD-SA-MOD", "VD-SARL-MOD"]
+        },
+        {
+          "id": "vd-domicile",
+          "title": "Check Swiss domicile evidence",
+          "description": "Determine whether a recent municipal domicile certificate is required for a person whose registration establishes the company's representation in Switzerland.",
+          "required": true,
+          "sourceIds": ["VD-GENERAL"]
+        }
+      ],
+      "warnings": [
+        "For a new SA board member, consult the specific Vaud guidance on the original general meeting minutes, filing signatures and signature legalisation."
+      ]
+    },
+    "remove": {
+      "steps": [
+        {
+          "id": "vd-departure-evidence",
+          "title": "Check departure or removal evidence",
+          "description": "Review the resignation letter or the relevant corporate decision record supporting removal from the register.",
+          "required": true,
+          "sourceIds": ["VD-GENERAL"]
+        },
+        {
+          "id": "vd-cancel-authority",
+          "title": "Verify cancellation of representation powers",
+          "description": "Check whether the departing person's registered signing powers must also be cancelled.",
+          "required": true,
+          "sourceIds": ["VD-SA"]
+        }
+      ],
+      "warnings": [
+        "A departing officeholder may, subject to the applicable requirements, request cancellation of their own registration."
+      ]
+    },
+    "signature": {
+      "steps": [
+        {
+          "id": "vd-signing-decision",
+          "title": "Review the signing-authority decision",
+          "description": "Check the competent body's resolution and the precise signing mode to be registered.",
+          "required": true,
+          "sourceIds": ["VD-SA"]
+        },
+        {
+          "id": "vd-signature-legalisation",
+          "title": "Review signature legalisation",
+          "description": "Check whether a new authorised signatory must have their specimen signature legally certified.",
+          "required": true,
+          "sourceIds": ["VD-SA"]
+        }
+      ],
+      "warnings": [
+        "Distinguish granting signing authority from cancelling an existing registered signature."
+      ]
+    }
+  },
+  "warnings": [
+    "Cantonal procedures must be checked against the current official instructions before filing.",
+    "An ordinary email is not an accepted filing channel for these modification procedures.",
+    "Original supporting documents or acceptable extracts may be required.",
+    "Changes to the articles of association may require additional formalities.",
+    "This dataset is preliminary and requires professional legal review."
+  ]
+}
