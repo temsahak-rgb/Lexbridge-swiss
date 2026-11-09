@@ -1,15 +1,18 @@
 
 /**
  * LexBridge — Corporate Module Entry Point
- * Version: 0.5.0
+ * Version: 0.6.0
  *
- * Connects:
- * - Corporate Matter Wizard
- * - Legal workflow service
- * - Workflow report
- * - Document generator
+ * Features:
+ * - Four-step Matter Wizard
+ * - Independent Corporate sections
+ * - Paginated legal checklist
+ * - Legal considerations
+ * - Official legal sources
+ * - Document Generator
  *
- * No legal rules or document templates here.
+ * Framework-free ES module.
+ * No legal rules or templates in this file.
  */
 
 "use strict";
@@ -28,6 +31,10 @@ import {
 } from "./ui/report.js";
 
 import {
+  createCorporateSections
+} from "./ui/corporate-sections.js";
+
+import {
   createCorporateWorkflow
 } from "./workflow-service.js";
 
@@ -35,12 +42,28 @@ import {
   createDocumentController
 } from "./documents/document-controller.js";
 
-/**
- * Called by the LexBridge Module Loader.
- *
- * @param {object} context Shared application context.
- * @param {HTMLElement} container Corporate module container.
- */
+// ---------------------------------------------
+// HELPERS
+// ---------------------------------------------
+
+function el(tag, text, className = "") {
+  const node = document.createElement(tag);
+
+  if (text !== undefined && text !== null) {
+    node.textContent = String(text);
+  }
+
+  if (className) {
+    node.className = className;
+  }
+
+  return node;
+}
+
+// ---------------------------------------------
+// MODULE ENTRY POINT
+// ---------------------------------------------
+
 export async function mount(context, container) {
   if (!(container instanceof HTMLElement)) {
     throw new Error(
@@ -48,56 +71,68 @@ export async function mount(context, container) {
     );
   }
 
-  // ---------------------------------------
-  // MATTER FORM
-  // ---------------------------------------
+  // -------------------------------------------
+  // MATTER WIZARD
+  // -------------------------------------------
 
-  const panel = document.createElement("section");
-  panel.className = "card";
-  panel.style.marginTop = "24px";
+  const matterPanel = el(
+    "section",
+    null,
+    "card"
+  );
 
-  const heading = document.createElement("h2");
-  heading.textContent = "New Corporate Matter";
+  matterPanel.style.marginTop = "24px";
 
-  const description = document.createElement("p");
-  description.className = "card-description";
-  description.textContent =
-    "Enter the company information step by step. " +
-    "You can return to earlier steps without " +
-    "losing your entries.";
+  matterPanel.append(
+    el("h2", "New Corporate Matter"),
+    el(
+      "p",
+      "Enter the company information step by step. " +
+      "You can return to earlier steps without " +
+      "losing your entries.",
+      "card-description"
+    )
+  );
 
   const { form, submitButton } =
     createCorporateForm();
 
-  // ---------------------------------------
-  // WORKFLOW REPORT
-  // ---------------------------------------
-
-  const reportContainer =
-    document.createElement("section");
-
-  reportContainer.style.marginTop = "24px";
-  reportContainer.hidden = true;
-
-  reportContainer.setAttribute(
-    "aria-live",
-    "polite"
+  createMatterWizard(
+    form,
+    submitButton
   );
+
+  matterPanel.appendChild(form);
+
+  // -------------------------------------------
+  // REPORT CONTROLLER
+  // -------------------------------------------
+
+  /*
+   * The report controller creates independent
+   * sections inside this temporary container.
+   *
+   * The section navigator will move those
+   * elements into separate pages.
+   */
+
+  const reportHost = el("div");
+  reportHost.hidden = true;
 
   const reportController =
     createReportController(
       context,
-      reportContainer
+      reportHost
     );
 
-  // ---------------------------------------
-  // DOCUMENT GENERATOR
-  // ---------------------------------------
+  const reportSections =
+    reportController.getSections();
 
-  const documentContainer =
-    document.createElement("section");
+  // -------------------------------------------
+  // DOCUMENT CONTROLLER
+  // -------------------------------------------
 
-  documentContainer.style.marginTop = "24px";
+  const documentContainer = el("section");
   documentContainer.hidden = true;
 
   const documentController =
@@ -107,9 +142,111 @@ export async function mount(context, container) {
       null
     );
 
-  // ---------------------------------------
+  // -------------------------------------------
+  // SECTION NAVIGATION
+  // -------------------------------------------
+
+  const sectionNavigator =
+    createCorporateSections();
+
+  sectionNavigator.mountSection(
+    "workflow",
+    reportSections.workflow
+  );
+
+  sectionNavigator.mountSection(
+    "warnings",
+    reportSections.warnings
+  );
+
+  sectionNavigator.mountSection(
+    "sources",
+    reportSections.sources
+  );
+
+  sectionNavigator.mountSection(
+    "documents",
+    documentContainer
+  );
+
+  // Document templates currently support
+  // appointment workflows only.
+  sectionNavigator.setSectionEnabled(
+    "documents",
+    false
+  );
+
+  const workspace = el(
+    "section",
+    null,
+    "lb-corporate-workspace"
+  );
+
+  workspace.style.marginTop = "24px";
+  workspace.hidden = true;
+
+  // -------------------------------------------
+  // WORKSPACE HEADER
+  // -------------------------------------------
+
+  const workspaceHeader = el(
+    "div",
+    null,
+    "lb-page-header"
+  );
+
+  const workspaceTitle = el(
+    "h2",
+    "Corporate Matter"
+  );
+
+  const workspaceDescription = el(
+    "p",
+    "Review the workflow, legal considerations, " +
+    "official sources and available documents.",
+    "card-description"
+  );
+
+  const editButton = el(
+    "button",
+    "Edit Matter Details",
+    "btn btn-secondary"
+  );
+
+  editButton.type = "button";
+  editButton.style.marginTop = "12px";
+
+  workspaceHeader.append(
+    workspaceTitle,
+    workspaceDescription,
+    editButton
+  );
+
+  workspace.append(
+    workspaceHeader,
+    sectionNavigator.element
+  );
+
+  // -------------------------------------------
+  // EDIT MATTER
+  // -------------------------------------------
+
+  editButton.addEventListener(
+    "click",
+    () => {
+      workspace.hidden = true;
+      matterPanel.hidden = false;
+
+      matterPanel.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  );
+
+  // -------------------------------------------
   // WORKFLOW SUBMISSION
-  // ---------------------------------------
+  // -------------------------------------------
 
   form.addEventListener(
     "submit",
@@ -120,8 +257,6 @@ export async function mount(context, container) {
       submitButton.textContent =
         "Generating workflow...";
 
-      documentController.clear();
-
       try {
         const matter =
           readCorporateMatter(form);
@@ -129,23 +264,50 @@ export async function mount(context, container) {
         const workflow =
           await createCorporateWorkflow(matter);
 
+        // Replace the active legal report.
         reportController.setWorkflow(
           workflow
         );
 
-        // Appointment documents only.
+        // Clear outdated document drafts
+        // before linking the new matter.
+        documentController.clear();
+
         documentController.updateMatter(
           matter
         );
 
+        // Documents only for appointments.
+        const documentsAvailable =
+          matter.operation === "appoint";
+
+        sectionNavigator.setSectionEnabled(
+          "documents",
+          documentsAvailable
+        );
+
+        // Show the first report page.
+        sectionNavigator.reset();
+        sectionNavigator.showSection(
+          "workflow"
+        );
+
+        workspaceTitle.textContent =
+          matter.companyName ||
+          "Corporate Matter";
+
+        // Hide matter form and display
+        // the independent report pages.
+        matterPanel.hidden = true;
+        workspace.hidden = false;
+
         context.setStatus(
           "Corporate workflow generated. " +
-          "Review the legal checklist below.",
+          "You can now review each section.",
           "success"
         );
 
-        // Bring the generated report into view.
-        reportContainer.scrollIntoView({
+        workspace.scrollIntoView({
           behavior: "smooth",
           block: "start"
         });
@@ -169,32 +331,12 @@ export async function mount(context, container) {
     }
   );
 
-  // ---------------------------------------
-  // ACTIVATE MATTER WIZARD
-  // ---------------------------------------
-
-  const matterWizard =
-    createMatterWizard(
-      form,
-      submitButton
-    );
-
-  // Preserve a reference for future navigation.
-  panel.dataset.component = "matter-wizard";
-
-  panel.append(
-    heading,
-    description,
-    form
-  );
-
-  // ---------------------------------------
-  // MOUNT COMPONENTS
-  // ---------------------------------------
+  // -------------------------------------------
+  // INITIAL MOUNT
+  // -------------------------------------------
 
   container.replaceChildren(
-    panel,
-    reportContainer,
-    documentContainer
+    matterPanel,
+    workspace
   );
 }
