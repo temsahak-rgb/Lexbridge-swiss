@@ -1,15 +1,16 @@
 
 /**
  * LexBridge — Application Shell
- * Version: 0.3.0
+ * Version: 0.4.0
  *
  * Features:
- * - Permanent left sidebar on all devices
+ * - Consistent left sidebar on all devices
  * - Dashboard and Corporate workspace
- * - Language selector at the top right
- * - English, French and German interface
- * - Preserves mounted corporate module state
- * - Accessible navigation and language control
+ * - Top-right interface language selector
+ * - English, French and German
+ * - Global Translation Manager integration
+ * - Preserves mounted legal module state
+ * - No workflow regeneration on language change
  *
  * Framework-free ES module.
  * Compatible with GitHub Pages.
@@ -25,14 +26,18 @@ import {
   t
 } from "./i18n.js";
 
+import {
+  createGlobalTranslationManager
+} from "./global-translation-manager.js";
+
 // ---------------------------------------------
 // DOM UTILITIES
 // ---------------------------------------------
 
-function el(tag, text, className = "") {
+function el(tag, text = null, className = "") {
   const node = document.createElement(tag);
 
-  if (text !== undefined && text !== null) {
+  if (text !== null && text !== undefined) {
     node.textContent = String(text);
   }
 
@@ -67,7 +72,7 @@ function reportShellError(error, context) {
 }
 
 // ---------------------------------------------
-// SIDEBAR NAVIGATION BUTTON
+// SIDEBAR NAVIGATION
 // ---------------------------------------------
 
 function createNavButton({
@@ -97,10 +102,7 @@ function createNavButton({
     "true"
   );
 
-  const labelNode = el(
-    "span",
-    ""
-  );
+  const labelNode = el("span", "");
 
   const note = disabled
     ? el(
@@ -241,6 +243,8 @@ function createDashboard(onNavigate) {
     futureCard
   );
 
+  // Disclaimer
+
   const disclaimer = el(
     "p",
     "",
@@ -296,17 +300,6 @@ function createDashboard(onNavigate) {
 // TOP-RIGHT LANGUAGE SELECTOR
 // ---------------------------------------------
 
-/**
- * Creates a compact, native language selector.
- *
- * The control is placed in the top-right area
- * of the main workspace, not in the sidebar.
- *
- * Native select works with mouse, keyboard,
- * touch screens, iPad and mobile browsers.
- *
- * Document language is not affected.
- */
 function createTopLanguageSelector() {
   const wrapper = el(
     "div",
@@ -318,12 +311,8 @@ function createTopLanguageSelector() {
   wrapper.style.alignItems = "center";
   wrapper.style.justifyContent = "flex-end";
   wrapper.style.gap = "8px";
-  wrapper.style.maxWidth = "100%";
 
-  const globe = el(
-    "span",
-    "🌐"
-  );
+  const globe = el("span", "🌐");
 
   globe.setAttribute(
     "aria-hidden",
@@ -332,6 +321,8 @@ function createTopLanguageSelector() {
 
   globe.style.fontSize = "20px";
   globe.style.lineHeight = "1";
+
+  const label = el("label", "");
 
   const select = el(
     "select",
@@ -345,6 +336,8 @@ function createTopLanguageSelector() {
   select.style.width = "auto";
   select.style.minWidth = "76px";
   select.style.minHeight = "44px";
+  select.style.maxWidth = "100%";
+
   select.style.padding = "8px 12px";
 
   select.style.border =
@@ -352,6 +345,7 @@ function createTopLanguageSelector() {
 
   select.style.borderRadius = "9px";
   select.style.backgroundColor = "#ffffff";
+
   select.style.color =
     "var(--lb-navy, #172c45)";
 
@@ -361,18 +355,9 @@ function createTopLanguageSelector() {
   select.style.cursor = "pointer";
 
   const languages = [
-    {
-      code: "en",
-      label: "EN — English"
-    },
-    {
-      code: "fr",
-      label: "FR — Français"
-    },
-    {
-      code: "de",
-      label: "DE — Deutsch"
-    }
+    { code: "en", label: "EN — English" },
+    { code: "fr", label: "FR — Français" },
+    { code: "de", label: "DE — Deutsch" }
   ];
 
   for (const language of languages) {
@@ -386,29 +371,22 @@ function createTopLanguageSelector() {
     select.appendChild(option);
   }
 
-  const screenReaderLabel = el(
-    "label",
-    "",
-    "lb-language-accessible-label"
-  );
+  label.htmlFor = select.id;
 
-  screenReaderLabel.htmlFor = select.id;
-
-  // Visually hidden but available to
-  // screen readers and accessibility tools.
-  screenReaderLabel.style.position = "absolute";
-  screenReaderLabel.style.width = "1px";
-  screenReaderLabel.style.height = "1px";
-  screenReaderLabel.style.padding = "0";
-  screenReaderLabel.style.margin = "-1px";
-  screenReaderLabel.style.overflow = "hidden";
-  screenReaderLabel.style.clip = "rect(0, 0, 0, 0)";
-  screenReaderLabel.style.whiteSpace = "nowrap";
-  screenReaderLabel.style.border = "0";
+  // Accessible label, visually hidden.
+  label.style.position = "absolute";
+  label.style.width = "1px";
+  label.style.height = "1px";
+  label.style.padding = "0";
+  label.style.margin = "-1px";
+  label.style.overflow = "hidden";
+  label.style.clip = "rect(0, 0, 0, 0)";
+  label.style.whiteSpace = "nowrap";
+  label.style.border = "0";
 
   wrapper.append(
     globe,
-    screenReaderLabel,
+    label,
     select
   );
 
@@ -420,17 +398,14 @@ function createTopLanguageSelector() {
   function refresh() {
     if (destroyed) return;
 
-    const current = getLanguage();
-
-    select.value = current;
+    select.value = getLanguage();
 
     const accessibleName =
       t("language.interfaceLanguage");
 
-    screenReaderLabel.textContent =
-      accessibleName;
-
+    label.textContent = accessibleName;
     select.title = accessibleName;
+
     select.setAttribute(
       "aria-label",
       accessibleName
@@ -460,8 +435,6 @@ function createTopLanguageSelector() {
         "Interface language change"
       );
 
-      // Restore the selected option if
-      // the requested language failed to load.
       select.value = previousLanguage;
     } finally {
       busy = false;
@@ -503,16 +476,6 @@ function createTopLanguageSelector() {
 // APPLICATION SHELL
 // ---------------------------------------------
 
-/**
- * Create the LexBridge application shell.
- *
- * Public API:
- * - moduleContainer
- * - navigate(page)
- * - showCorporate()
- * - getActivePage()
- * - destroy()
- */
 export function createAppShell(host) {
   if (!(host instanceof HTMLElement)) {
     throw new Error(
@@ -622,17 +585,12 @@ export function createAppShell(host) {
     complianceNav.element
   );
 
-  // -------------------------------------------
-  // SIDEBAR FOOTER
-  // -------------------------------------------
-
   const sidebarFooter = el(
     "div",
     "",
     "lb-sidebar-footer"
   );
 
-  // No language selector in the sidebar.
   sidebar.append(
     brand,
     navigation,
@@ -640,7 +598,7 @@ export function createAppShell(host) {
   );
 
   // -------------------------------------------
-  // MAIN CONTENT
+  // MAIN
   // -------------------------------------------
 
   const main = el(
@@ -723,8 +681,6 @@ export function createAppShell(host) {
     corporateDescription
   );
 
-  // Stable container:
-  // Never replace it during language changes.
   const moduleContainer = el(
     "div",
     null,
@@ -740,7 +696,9 @@ export function createAppShell(host) {
   // DASHBOARD
   // -------------------------------------------
 
-  const dashboard = createDashboard(navigate);
+  const dashboard = createDashboard(
+    navigate
+  );
 
   content.append(
     topBar,
@@ -817,7 +775,7 @@ export function createAppShell(host) {
   );
 
   // -------------------------------------------
-  // TRANSLATIONS
+  // SHELL TRANSLATIONS
   // -------------------------------------------
 
   function updateTranslations() {
@@ -862,7 +820,52 @@ export function createAppShell(host) {
   }
 
   const unsubscribeLanguage =
-    onLanguageChange(updateTranslations);
+    onLanguageChange(
+      updateTranslations
+    );
+
+  // -------------------------------------------
+  // GLOBAL TRANSLATION MANAGER
+  // -------------------------------------------
+
+  /*
+   * The manager watches the mounted shell.
+   * It translates recognized interface text
+   * in dynamically added modules.
+   *
+   * Important:
+   * It does not recreate forms, regenerate
+   * workflows or change user input values.
+   */
+
+  const translationManager =
+    createGlobalTranslationManager({
+      root: shell
+    });
+
+  let translationManagerStarted = false;
+
+  async function startTranslations() {
+    try {
+      await translationManager.start();
+
+      if (destroyed) {
+        translationManager.destroy();
+        return;
+      }
+
+      translationManagerStarted = true;
+
+      // Translate existing mounted UI.
+      translationManager.refresh();
+
+    } catch (error) {
+      reportShellError(
+        error,
+        "Global translation initialization"
+      );
+    }
+  }
 
   // -------------------------------------------
   // INITIAL MOUNT
@@ -873,9 +876,20 @@ export function createAppShell(host) {
   navigate("dashboard");
   updateTranslations();
 
-  // Initialize asynchronously to preserve
-  // compatibility with existing js/app.js.
+  /*
+   * Initialize dictionaries first.
+   * Then start global translation detection.
+   *
+   * Keep createAppShell synchronous for
+   * compatibility with js/app.js.
+   */
+
   initializeI18n()
+    .then(async () => {
+      if (destroyed) return;
+
+      await startTranslations();
+    })
     .catch((error) => {
       reportShellError(
         error,
@@ -906,6 +920,24 @@ export function createAppShell(host) {
       return activePage;
     },
 
+    refreshTranslations() {
+      if (
+        destroyed ||
+        !translationManagerStarted
+      ) {
+        return;
+      }
+
+      translationManager.refresh();
+    },
+
+    getMissingTranslations() {
+      if (destroyed) return [];
+
+      return translationManager
+        .getMissingTranslations();
+    },
+
     destroy() {
       if (destroyed) return;
 
@@ -913,6 +945,8 @@ export function createAppShell(host) {
 
       unsubscribeLanguage();
       languageSelector.destroy();
+
+      translationManager.destroy();
 
       shell.remove();
     }
