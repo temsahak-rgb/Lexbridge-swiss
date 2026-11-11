@@ -1,19 +1,26 @@
 
 /**
  * LexBridge — Global Translation Manager
- * Version: 0.3.0
+ * Version: 0.4.0
  *
- * Languages: EN / FR / DE
+ * Centralized EN / FR / DE interface translation.
+ *
+ * Sources:
+ * 1. locales/en.json, fr.json, de.json
+ * 2. locales/legal-content.json
+ * 3. Legacy interface aliases
+ * 4. Dynamic interface patterns
  *
  * Features:
- * - Existing locale dictionaries
- * - Known corporate workflow content
- * - Native select option translations
- * - Dynamic pagination and counters
- * - Dynamic workflow statuses
- * - MutationObserver for new UI elements
- * - Preserves form values and step status IDs
- * - Keeps legal document content untouched
+ * - Automatically discovers translations in JSON
+ * - Supports nested legal translation groups
+ * - Translates dynamically inserted UI
+ * - Translates native status-select options
+ * - Preserves select values and user inputs
+ * - Supports workflow counters and pagination
+ * - Does not regenerate legal workflows
+ * - Does not intentionally translate documents
+ * - Graceful fallback if legal JSON is unavailable
  *
  * No external APIs or dependencies.
  */
@@ -27,7 +34,15 @@ import {
   onLanguageChange
 } from "./i18n.js";
 
-const LANGUAGES = ["en", "fr", "de"];
+// ---------------------------------------------
+// CONFIGURATION
+// ---------------------------------------------
+
+const LANGUAGES = [
+  "en",
+  "fr",
+  "de"
+];
 
 const EXCLUDED_TAGS = new Set([
   "SCRIPT",
@@ -69,166 +84,203 @@ const STATUS_CODES = [
   "not_applicable"
 ];
 
-/*
- * Explicit translations.
- *
- * Format:
- * [English, French, German]
- *
- * Translation entries must not change
- * the underlying legal workflow data.
- */
-
-const CONTENT = [
-  [
-    "Verify company registration",
-    "Vérifier l'inscription de la société",
-    "Handelsregistereintrag der Gesellschaft prüfen"
-  ],
-  [
-    "Check the company identity, legal form and current commercial register extract.",
-    "Vérifier l'identité de la société, sa forme juridique et son extrait actuel du registre du commerce.",
-    "Identität und Rechtsform der Gesellschaft sowie den aktuellen Handelsregisterauszug prüfen."
-  ],
-  [
-    "Review articles of association",
-    "Examiner les statuts de la société",
-    "Statuten der Gesellschaft prüfen"
-  ],
-  [
-    "Identify any relevant company-specific rules on corporate decisions and representation.",
-    "Identifier les règles statutaires pertinentes relatives aux décisions sociales et à la représentation.",
-    "Relevante statutarische Bestimmungen zu Gesellschaftsbeschlüssen und zur Vertretung feststellen."
-  ],
-  [
-    "Identify the competent corporate body",
-    "Identifier l'organe social compétent",
-    "Zuständiges Gesellschaftsorgan bestimmen"
-  ],
-  [
-    "Determine who has authority to decide the proposed change.",
-    "Déterminer quel organe est compétent pour décider de la modification envisagée.",
-    "Feststellen, welches Organ für den Beschluss über die geplante Änderung zuständig ist."
-  ],
-  [
-    "Review supporting evidence",
-    "Examiner les pièces justificatives",
-    "Belege und Nachweise prüfen"
-  ],
-  [
-    "Check the decision record and supporting documents appropriate to the change.",
-    "Vérifier le procès-verbal de décision et les pièces justificatives correspondant à la modification.",
-    "Beschlussprotokoll und die für die Änderung erforderlichen Belege prüfen."
-  ],
-  [
-    "Check company representation",
-    "Vérifier la représentation de la société",
-    "Vertretung der Gesellschaft prüfen"
-  ],
-  [
-    "Verify continuing representation arrangements and relevant signing powers.",
-    "Vérifier les modalités de représentation en vigueur et les pouvoirs de signature correspondants.",
-    "Die geltenden Vertretungsregelungen und die entsprechenden Zeichnungsberechtigungen prüfen."
-  ],
-  [
-    "This workflow is preliminary and does not constitute legal advice.",
-    "Cette procédure est préliminaire et ne constitue pas un avis juridique.",
-    "Dieser Arbeitsablauf ist vorläufig und stellt keine Rechtsberatung dar."
-  ],
-  [
-    "Check the current legislation and official cantonal registry instructions.",
-    "Vérifiez la législation en vigueur et les instructions officielles du registre du commerce cantonal.",
-    "Prüfen Sie die geltenden Rechtsvorschriften und die offiziellen Anweisungen des kantonalen Handelsregisteramts."
-  ],
-  [
-    "The company's articles of association and the facts of the matter may change the procedure.",
-    "Les statuts de la société et les circonstances du dossier peuvent modifier la procédure applicable.",
-    "Die Statuten der Gesellschaft und der konkrete Sachverhalt können den erforderlichen Ablauf verändern."
-  ],
-  [
-    "No documents are automatically filed or legally approved.",
-    "Aucun document n'est automatiquement déposé ou juridiquement validé.",
-    "Dokumente werden weder automatisch eingereicht noch rechtlich genehmigt."
-  ],
-  [
-    "Legal source metadata for a prototype. Article applicability and current wording must be checked before legal use.",
-    "Métadonnées des sources juridiques destinées à un prototype. L'applicabilité des articles et leur teneur actuelle doivent être vérifiées avant toute utilisation juridique.",
-    "Rechtsquellen-Metadaten für einen Prototyp. Die Anwendbarkeit und der aktuelle Wortlaut der Bestimmungen müssen vor einer rechtlichen Verwendung geprüft werden."
-  ],
-  [
-    "Swiss Code of Obligations",
-    "Code des obligations suisse",
-    "Schweizerisches Obligationenrecht"
-  ],
-  [
-    "Commercial Register Ordinance",
-    "Ordonnance sur le registre du commerce",
-    "Handelsregisterverordnung"
-  ],
-  [
-    "Central Business Name Index",
-    "Index central des raisons de commerce",
-    "Zentraler Firmenindex"
-  ],
-  [
-    "Check company registration information and identify the competent commercial register.",
-    "Vérifier les données d'inscription de la société et identifier le registre du commerce compétent.",
-    "Handelsregisterangaben der Gesellschaft prüfen und das zuständige Handelsregisteramt ermitteln."
-  ],
-  [
-    "Draft document only. The content must be reviewed and signed in accordance with the competent commercial registry's requirements",
-    "Projet de document uniquement. Le contenu doit être vérifié et signé conformément aux exigences du registre du commerce compétent.",
-    "Nur ein Dokumententwurf. Der Inhalt muss gemäss den Anforderungen des zuständigen Handelsregisteramts geprüft und unterzeichnet werden."
-  ],
-  [
-    "Draft document only. The content must be reviewed and signed in accordance with the competent commercial registry's requirements.",
-    "Projet de document uniquement. Le contenu doit être vérifié et signé conformément aux exigences du registre du commerce compétent.",
-    "Nur ein Dokumententwurf. Der Inhalt muss gemäss den Anforderungen des zuständigen Handelsregisteramts geprüft und unterzeichnet werden."
-  ],
-  [
-    "Workflow checklist",
-    "Liste de contrôle juridique",
-    "Rechtliche Checkliste"
-  ],
-  [
-    "Official legal sources",
-    "Sources juridiques officielles",
-    "Offizielle Rechtsquellen"
-  ],
-  [
-    "Document template",
-    "Modèle de document",
-    "Dokumentvorlage"
-  ],
-  [
-    "Generate document draft",
-    "Générer le projet de document",
-    "Dokumententwurf erstellen"
-  ],
-  [
+const STATUS_TRANSLATIONS = {
+  pending_review: [
     "Pending review",
     "En attente de vérification",
     "Prüfung ausstehend"
   ],
-  [
-    "Review status",
-    "État de la vérification",
-    "Prüfstatus"
+
+  pending: [
+    "Pending",
+    "En attente",
+    "Ausstehend"
   ],
-  [
-    "Source IDs",
-    "Identifiants des sources",
-    "Quellenkennungen"
+
+  completed: [
+    "Completed",
+    "Terminé",
+    "Abgeschlossen"
   ],
-  [
-    "Relevant articles to review",
-    "Articles pertinents à examiner",
-    "Zu prüfende Artikel"
+
+  blocked: [
+    "Blocked",
+    "Bloqué",
+    "Blockiert"
   ],
+
+  not_applicable: [
+    "Not applicable",
+    "Sans objet",
+    "Nicht anwendbar"
+  ]
+};
+
+const OPERATION_TRANSLATIONS = {
+  appoint: [
+    "Appointment",
+    "Nomination",
+    "Wahl oder Ernennung"
+  ],
+
+  remove: [
+    "Removal or resignation",
+    "Révocation ou démission",
+    "Abberufung oder Rücktritt"
+  ],
+
+  signature: [
+    "Change of signing authority",
+    "Modification du pouvoir de signature",
+    "Änderung der Zeichnungsberechtigung"
+  ]
+};
+
+// ---------------------------------------------
+// LEGACY INTERFACE ALIASES
+// ---------------------------------------------
+
+/**
+ * Maps old English UI strings to existing
+ * locale keys.
+ *
+ * These aliases are for interface text.
+ * Legal content now comes from JSON.
+ */
+
+const LEGACY_KEYS = {
+  "New Corporate Matter":
+    "corporate.newMatter",
+
+  "Edit Corporate Matter":
+    "corporate.editMatter",
+
+  "Enter or edit the case information. Existing review progress will be retained where compatible.":
+    "corporate.matterEditDescription",
+
+  "Cancel Editing":
+    "corporate.cancelEditing",
+
+  "Corporate Matter":
+    "corporate.matterTitle",
+
+  "Edit Matter Details":
+    "corporate.editMatterDetails",
+
+  "Review your workflow, legal considerations, official sources and documents.":
+    "corporate.reviewDescription",
+
+  "Company Information":
+    "corporate.companyInformation",
+
+  "Proposed Change":
+    "corporate.proposedChange",
+
+  "Person Details":
+    "corporate.personDetails",
+
+  "Confirm Information":
+    "corporate.confirmInformation",
+
+  "Please confirm the information before generating the preliminary legal workflow.":
+    "corporate.confirmDescription",
+
+  "Company":
+    "corporate.company",
+
+  "Legal form":
+    "corporate.legalForm",
+
+  "Canton":
+    "corporate.canton",
+
+  "Person concerned":
+    "corporate.personName",
+
+  "Not provided":
+    "corporate.notProvided",
+
+  "Workflow":
+    "sections.workflow",
+
+  "Workflow Overview":
+    "workflow.overview",
+
+  "Workflow checklist":
+    "workflow.checklist",
+
+  "Workflow Checklist":
+    "workflow.checklist",
+
+  "Legal Considerations":
+    "sections.warnings",
+
+  "Official legal sources":
+    "sections.sources",
+
+  "Official Legal Sources":
+    "sections.sources",
+
+  "Document Generator":
+    "sections.documents",
+
+  "Document template":
+    "documents.template",
+
+  "Generate document draft":
+    "documents.generate",
+
+  "Generate Document Draft":
+    "documents.generate",
+
+  "Generate legal workflow":
+    "corporate.generateWorkflow",
+
+  "Review status":
+    "workflow.stepStatus",
+
+  "Source IDs":
+    "workflow.sourceIds",
+
+  "Dataset review date":
+    "legal.datasetReviewDate",
+
+  "Previous":
+    "actions.previous",
+
+  "Next":
+    "actions.next",
+
+  "Back":
+    "actions.back",
+
+  "Continue":
+    "actions.continue",
+
+  "Finish":
+    "actions.finish",
+
+  "Export JSON":
+    "workflow.exportJSON"
+};
+
+// ---------------------------------------------
+// SMALL UI TRANSLATIONS
+// ---------------------------------------------
+
+/**
+ * Only interface-level strings remain here.
+ *
+ * Workflow titles, descriptions, warnings,
+ * source titles and document disclaimers
+ * must be maintained in legal-content.json.
+ */
+
+const INTERFACE_TERMS = [
   [
-    "Dataset review date",
-    "Date de révision des données",
-    "Datum der Datenüberprüfung"
+    "Pending review",
+    "En attente de vérification",
+    "Prüfung ausstehend"
   ],
   [
     "Pending",
@@ -261,144 +313,30 @@ const CONTENT = [
     "Weiter"
   ],
   [
-    "Export JSON",
-    "Exporter en JSON",
-    "JSON exportieren"
-  ],
-  [
     "Prototype",
     "Prototype",
     "Prototyp"
+  ],
+  [
+    "Relevant articles to review",
+    "Articles pertinents à examiner",
+    "Zu prüfende Artikel"
+  ],
+  [
+    "Dataset review date",
+    "Date de révision des données",
+    "Datum der Datenüberprüfung"
+  ],
+  [
+    "Source IDs",
+    "Identifiants des sources",
+    "Quellenkennungen"
   ]
 ];
 
-/*
- * Legacy text mappings.
- * The values refer to keys in locales/*.json.
- */
-
-const LEGACY_KEYS = {
-  "New Corporate Matter":
-    "corporate.newMatter",
-
-  "Edit Corporate Matter":
-    "corporate.editMatter",
-
-  "Cancel Editing":
-    "corporate.cancelEditing",
-
-  "Corporate Matter":
-    "corporate.matterTitle",
-
-  "Edit Matter Details":
-    "corporate.editMatterDetails",
-
-  "Company Information":
-    "corporate.companyInformation",
-
-  "Proposed Change":
-    "corporate.proposedChange",
-
-  "Person Details":
-    "corporate.personDetails",
-
-  "Confirm Information":
-    "corporate.confirmInformation",
-
-  "Company":
-    "corporate.company",
-
-  "Legal form":
-    "corporate.legalForm",
-
-  "Canton":
-    "corporate.canton",
-
-  "Person concerned":
-    "corporate.personName",
-
-  "Not provided":
-    "corporate.notProvided",
-
-  "Workflow Overview":
-    "workflow.overview",
-
-  "Workflow Checklist":
-    "workflow.checklist",
-
-  "Official Legal Sources":
-    "sections.sources",
-
-  "Legal Considerations":
-    "sections.warnings",
-
-  "Document Generator":
-    "sections.documents",
-
-  "Generate Document Draft":
-    "documents.generate",
-
-  "Generate legal workflow":
-    "corporate.generateWorkflow",
-
-  "Back":
-    "actions.back",
-
-  "Continue":
-    "actions.continue",
-
-  "Finish":
-    "actions.finish",
-
-  "Export JSON":
-    "workflow.exportJSON"
-};
-
-const STATUS_TRANSLATIONS = {
-  pending_review: [
-    "Pending review",
-    "En attente de vérification",
-    "Prüfung ausstehend"
-  ],
-  pending: [
-    "Pending",
-    "En attente",
-    "Ausstehend"
-  ],
-  completed: [
-    "Completed",
-    "Terminé",
-    "Abgeschlossen"
-  ],
-  blocked: [
-    "Blocked",
-    "Bloqué",
-    "Blockiert"
-  ],
-  not_applicable: [
-    "Not applicable",
-    "Sans objet",
-    "Nicht anwendbar"
-  ]
-};
-
-const OPERATION_TRANSLATIONS = {
-  appoint: [
-    "Appointment",
-    "Nomination",
-    "Wahl oder Ernennung"
-  ],
-  remove: [
-    "Removal or resignation",
-    "Révocation ou démission",
-    "Abberufung oder Rücktritt"
-  ],
-  signature: [
-    "Change of signing authority",
-    "Modification du pouvoir de signature",
-    "Änderung der Zeichnungsberechtigung"
-  ]
-};
+// ---------------------------------------------
+// UTILITIES
+// ---------------------------------------------
 
 function normalize(value) {
   return String(value ?? "")
@@ -414,24 +352,6 @@ function isObject(value) {
   );
 }
 
-function flatten(value, prefix = "", output = {}) {
-  if (!isObject(value)) return output;
-
-  for (const [name, entry] of Object.entries(value)) {
-    const key = prefix
-      ? `${prefix}.${name}`
-      : name;
-
-    if (typeof entry === "string") {
-      output[key] = entry;
-    } else if (isObject(entry)) {
-      flatten(entry, key, output);
-    }
-  }
-
-  return output;
-}
-
 function getLanguageIndex() {
   const index = LANGUAGES.indexOf(
     getLanguage()
@@ -440,21 +360,110 @@ function getLanguageIndex() {
   return index < 0 ? 0 : index;
 }
 
-function getTranslatedStatus(code) {
-  const values = STATUS_TRANSLATIONS[code];
+function flattenDictionary(
+  value,
+  prefix = "",
+  output = {}
+) {
+  if (!isObject(value)) {
+    return output;
+  }
 
-  return values
-    ? values[getLanguageIndex()]
-    : null;
+  for (const [name, entry] of Object.entries(
+    value
+  )) {
+    const key = prefix
+      ? `${prefix}.${name}`
+      : name;
+
+    if (typeof entry === "string") {
+      output[key] = entry;
+    } else if (isObject(entry)) {
+      flattenDictionary(
+        entry,
+        key,
+        output
+      );
+    }
+  }
+
+  return output;
 }
 
-function getTranslatedOperation(code) {
-  const values =
-    OPERATION_TRANSLATIONS[code];
+/**
+ * Detect multilingual leaf objects:
+ *
+ * {
+ *   en: "...",
+ *   fr: "...",
+ *   de: "..."
+ * }
+ *
+ * Other objects are treated as folders.
+ */
 
-  return values
-    ? values[getLanguageIndex()]
-    : null;
+function isTranslationEntry(value) {
+  return (
+    isObject(value) &&
+    typeof value.en === "string" &&
+    typeof value.fr === "string" &&
+    typeof value.de === "string"
+  );
+}
+
+/**
+ * Discover translation entries at any depth.
+ *
+ * This allows new workflow groups to be
+ * added without changing the engine.
+ */
+
+function collectLegalTranslations(
+  value,
+  prefix = "",
+  output = []
+) {
+  if (!isObject(value)) {
+    return output;
+  }
+
+  if (isTranslationEntry(value)) {
+    output.push({
+      key: prefix,
+      translations: [
+        value.en,
+        value.fr,
+        value.de
+      ]
+    });
+
+    return output;
+  }
+
+  for (const [name, child] of Object.entries(
+    value
+  )) {
+    if (
+      name === "metadata" ||
+      name === "__proto__" ||
+      name === "constructor" ||
+      name === "prototype"
+    ) {
+      continue;
+    }
+
+    const path = prefix
+      ? `${prefix}.${name}`
+      : name;
+
+    collectLegalTranslations(
+      child,
+      path,
+      output
+    );
+  }
+
+  return output;
 }
 
 function isExcluded(element) {
@@ -480,42 +489,27 @@ function isExcluded(element) {
   return false;
 }
 
-function translateStepCounter(current, total) {
-  if (getLanguage() === "fr") {
-    return `ÉTAPE ${current} SUR ${total}`;
-  }
+function getStatus(code) {
+  const translations =
+    STATUS_TRANSLATIONS[code];
 
-  if (getLanguage() === "de") {
-    return `SCHRITT ${current} VON ${total}`;
-  }
-
-  return `STEP ${current} OF ${total}`;
+  return translations
+    ? translations[getLanguageIndex()]
+    : null;
 }
 
-/*
- * Preserve values when translating
- * status selects. Their .value properties
- * must remain pending/completed/etc.
- */
-function isWorkflowStatusSelect(select) {
-  if (
-    !(select instanceof HTMLSelectElement) ||
-    isExcluded(select)
-  ) {
-    return false;
-  }
+function getOperation(code) {
+  const translations =
+    OPERATION_TRANSLATIONS[code];
 
-  const values = Array.from(
-    select.options,
-    (option) => option.value
-  );
-
-  if (!values.length) return false;
-
-  return values.every(
-    (value) => STATUS_CODES.includes(value)
-  );
+  return translations
+    ? translations[getLanguageIndex()]
+    : null;
 }
+
+// ---------------------------------------------
+// GLOBAL TRANSLATION MANAGER
+// ---------------------------------------------
 
 export function createGlobalTranslationManager({
   root = document.body
@@ -528,35 +522,59 @@ export function createGlobalTranslationManager({
 
   let started = false;
   let destroyed = false;
+  let starting = null;
 
   let observer = null;
   let unsubscribe = null;
-  let startPromise = null;
 
   let refreshQueued = false;
   let refreshing = false;
 
   const dictionaryIndex = new Map();
-  const contentIndex = new Map();
+  const legalIndex = new Map();
+  const interfaceIndex = new Map();
+
   const nodeSources = new WeakMap();
   const missingTranslations = new Set();
 
   // -------------------------------------------
-  // BUILD LOOKUP TABLES
+  // BUILD INDEXES
   // -------------------------------------------
 
-  async function buildIndex() {
+  function buildInterfaceIndex() {
+    interfaceIndex.clear();
+
+    for (const terms of INTERFACE_TERMS) {
+      for (const text of terms) {
+        const value = normalize(text);
+
+        if (
+          value &&
+          !interfaceIndex.has(value)
+        ) {
+          interfaceIndex.set(
+            value,
+            terms
+          );
+        }
+      }
+    }
+  }
+
+  async function buildDictionaryIndex() {
     const dictionaries = await Promise.all(
-      LANGUAGES.map((language) =>
-        loadLanguage(language)
+      LANGUAGES.map(
+        (language) =>
+          loadLanguage(language)
       )
     );
 
     dictionaryIndex.clear();
-    contentIndex.clear();
 
     for (const dictionary of dictionaries) {
-      const entries = flatten(dictionary);
+      const entries = flattenDictionary(
+        dictionary
+      );
 
       for (const [key, text] of Object.entries(
         entries
@@ -571,11 +589,16 @@ export function createGlobalTranslationManager({
         }
 
         if (!dictionaryIndex.has(value)) {
-          dictionaryIndex.set(value, key);
+          dictionaryIndex.set(
+            value,
+            key
+          );
         }
       }
     }
 
+    // Explicit aliases override ambiguous
+    // automatic dictionary matches.
     for (const [text, key] of Object.entries(
       LEGACY_KEYS
     )) {
@@ -584,102 +607,165 @@ export function createGlobalTranslationManager({
         key
       );
     }
+  }
 
-    CONTENT.forEach((translations, id) => {
-      for (const text of translations) {
-        if (!text) continue;
+  /**
+   * Load legal translations from the new
+   * external JSON file.
+   *
+   * URL is relative to this JS module:
+   *
+   * js/core/global-translation-manager.js
+   *                ->
+   * locales/legal-content.json
+   */
 
-        const normalized = normalize(text);
+  async function buildLegalIndex() {
+    legalIndex.clear();
 
-        if (!contentIndex.has(normalized)) {
-          contentIndex.set(normalized, id);
+    const url = new URL(
+      "../../locales/legal-content.json",
+      import.meta.url
+    );
+
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      if (!isObject(data)) {
+        throw new Error(
+          "Legal translations must be a JSON object."
+        );
+      }
+
+      const entries =
+        collectLegalTranslations(data);
+
+      for (const entry of entries) {
+        const translations =
+          entry.translations;
+
+        for (const text of translations) {
+          const value = normalize(text);
+
+          if (!value) continue;
+
+          // Keep the first matching legal
+          // entry if duplicates exist.
+          if (!legalIndex.has(value)) {
+            legalIndex.set(
+              value,
+              translations
+            );
+          }
         }
       }
-    });
+
+    } catch (error) {
+      // Do not disable ordinary UI translation
+      // if legal-content.json is unavailable.
+      console.warn(
+        "[LexBridge i18n] Unable to load " +
+        "legal-content.json:",
+        error
+      );
+    }
   }
 
   // -------------------------------------------
-  // TRANSLATE DYNAMIC TEXT
+  // DYNAMIC TEXT
   // -------------------------------------------
 
   function translateDynamic(value) {
     const text = normalize(value);
     const lang = getLanguageIndex();
 
-    // Step 4 of 4
-    let match = text.match(
+    let match;
+
+    // Wizard step counter.
+    match = text.match(
       /^(?:STEP|ÉTAPE|SCHRITT)\s+(\d+)\s+(?:OF|SUR|VON)\s+(\d+)$/i
     );
 
     if (match) {
-      return translateStepCounter(
-        match[1],
-        match[2]
-      );
+      if (lang === 1) {
+        return `ÉTAPE ${match[1]} SUR ${match[2]}`;
+      }
+
+      if (lang === 2) {
+        return `SCHRITT ${match[1]} VON ${match[2]}`;
+      }
+
+      return `STEP ${match[1]} OF ${match[2]}`;
     }
 
-    // Progress counters across languages.
-    match = text.match(
-      /^(\d+)\s+of\s+(\d+)\s+steps?\s+completed$/i
-    );
+    // Workflow progress in three languages.
+    const progressPatterns = [
+      /^(\d+)\s+of\s+(\d+)\s+steps?\s+completed$/i,
+      /^(\d+)\s+étapes?\s+terminées?\s+sur\s+(\d+)$/i,
+      /^(\d+)\s+von\s+(\d+)\s+Schritten?\s+abgeschlossen$/i
+    ];
 
-    if (!match) {
-      match = text.match(
-        /^(\d+)\s+étapes?\s+terminées?\s+sur\s+(\d+)$/i
-      );
+    for (const pattern of progressPatterns) {
+      match = text.match(pattern);
+
+      if (match) {
+        return t(
+          "workflow.progress",
+          {
+            completed: match[1],
+            total: match[2]
+          }
+        );
+      }
     }
 
-    if (!match) {
-      match = text.match(
-        /^(\d+)\s+von\s+(\d+)\s+Schritten?\s+abgeschlossen$/i
-      );
-    }
+    // Paginated checklist:
+    // 1–5 of 19 · Group 1 of 4
+    const paginationPatterns = [
+      /^(\d+)\s*[–-]\s*(\d+)\s+of\s+(\d+)\s*[·•|]\s*Group\s+(\d+)\s+of\s+(\d+)$/i,
+      /^(\d+)\s*[–-]\s*(\d+)\s+sur\s+(\d+)\s*[·•|]\s*Groupe\s+(\d+)\s+sur\s+(\d+)$/i,
+      /^(\d+)\s*[–-]\s*(\d+)\s+von\s+(\d+)\s*[·•|]\s*Gruppe\s+(\d+)\s+von\s+(\d+)$/i
+    ];
 
-    if (match) {
-      return t("workflow.progress", {
-        completed: match[1],
-        total: match[2]
-      });
-    }
+    for (const pattern of paginationPatterns) {
+      match = text.match(pattern);
 
-    // Workflow page: 1–5 of 19 · Group 1 of 4
-    match = text.match(
-      /^(\d+)\s*[–-]\s*(\d+)\s+of\s+(\d+)\s*[·•|]\s*Group\s+(\d+)\s+of\s+(\d+)$/i
-    );
+      if (!match) continue;
 
-    if (!match) {
-      match = text.match(
-        /^(\d+)\s*[–-]\s*(\d+)\s+sur\s+(\d+)\s*[·•|]\s*Groupe\s+(\d+)\s+sur\s+(\d+)$/i
-      );
-    }
-
-    if (!match) {
-      match = text.match(
-        /^(\d+)\s*[–-]\s*(\d+)\s+von\s+(\d+)\s*[·•|]\s*Gruppe\s+(\d+)\s+von\s+(\d+)$/i
-      );
-    }
-
-    if (match) {
-      const [, first, last, total, group, groups] =
-        match;
+      const [
+        ,
+        first,
+        last,
+        total,
+        group,
+        groupTotal
+      ] = match;
 
       if (lang === 1) {
         return (
           `${first}–${last} sur ${total}` +
-          ` · Groupe ${group} sur ${groups}`
+          ` · Groupe ${group} sur ${groupTotal}`
         );
       }
 
       if (lang === 2) {
         return (
           `${first}–${last} von ${total}` +
-          ` · Gruppe ${group} von ${groups}`
+          ` · Gruppe ${group} von ${groupTotal}`
         );
       }
 
       return (
         `${first}–${last} of ${total}` +
-        ` · Group ${group} of ${groups}`
+        ` · Group ${group} of ${groupTotal}`
       );
     }
 
@@ -689,19 +775,31 @@ export function createGlobalTranslationManager({
     );
 
     if (match) {
-      return t("workflow.group", {
-        current: match[1],
-        total: match[2]
-      });
+      const groupWords = [
+        "Group",
+        "Groupe",
+        "Gruppe"
+      ];
+
+      const joinWords = [
+        "of",
+        "sur",
+        "von"
+      ];
+
+      return (
+        `${groupWords[lang]} ${match[1]} ` +
+        `${joinWords[lang]} ${match[2]}`
+      );
     }
 
-    // Status: pending_review
+    // Internal status codes.
     match = text.match(
       /^(?:Status|Statut)\s*:\s*(pending_review|pending|completed|blocked|not_applicable)$/i
     );
 
     if (match) {
-      const label = getTranslatedStatus(
+      const label = getStatus(
         match[1].toLowerCase()
       );
 
@@ -712,28 +810,33 @@ export function createGlobalTranslationManager({
       return `${prefix}: ${label}`;
     }
 
-    // Already translated status.
-    for (const translations of Object.values(
-      STATUS_TRANSLATIONS
-    )) {
-      for (const existing of translations) {
-        const existingText = text.match(
-          /^(?:Status|Statut)\s*:\s*(.+)$/i
-        );
+    // Already translated status labels.
+    match = text.match(
+      /^(Status|Statut)\s*:\s*(.+)$/i
+    );
 
+    if (match) {
+      for (const translations of Object.values(
+        STATUS_TRANSLATIONS
+      )) {
         if (
-          existingText &&
-          existingText[1] === existing
+          translations.includes(
+            match[2]
+          )
         ) {
+          const prefix = lang === 1
+            ? "Statut"
+            : "Status";
+
           return (
-            `${lang === 1 ? "Statut" : "Status"}: ` +
+            `${prefix}: ` +
             translations[lang]
           );
         }
       }
     }
 
-    // Compact matter header.
+    // Matter legal scope.
     match = text.match(
       /^(SA|SARL)\s*[·•]\s*(VD|GE|ZH|BS)\s*[·•]\s*(appoint|remove|signature)$/i
     );
@@ -741,22 +844,26 @@ export function createGlobalTranslationManager({
     if (match) {
       return (
         `${match[1]} · ${match[2]} · ` +
-        getTranslatedOperation(
+        getOperation(
           match[3].toLowerCase()
         )
       );
     }
 
-    // Previously translated compact header.
+    // Already localized operation.
     match = text.match(
-      /^(SA|SARL)\s*[·•]\s*(VD|GE|ZH|BS)\s*[·•]\s*(.+)$/i
+      /^(SA|SARL)\s*[·•]\s*(VD|GE|ZH|BS)\s*[·•]\s*(.+)$/
     );
 
     if (match) {
       for (const translations of Object.values(
         OPERATION_TRANSLATIONS
       )) {
-        if (translations.includes(match[3])) {
+        if (
+          translations.includes(
+            match[3]
+          )
+        ) {
           return (
             `${match[1]} · ${match[2]} · ` +
             translations[lang]
@@ -765,7 +872,7 @@ export function createGlobalTranslationManager({
       }
     }
 
-    // Source IDs.
+    // Source IDs: preserve identifiers.
     match = text.match(
       /^(?:Source IDs|Identifiants des sources|Quellenkennungen)\s*:\s*(.+)$/i
     );
@@ -791,7 +898,7 @@ export function createGlobalTranslationManager({
       );
     }
 
-    // Relevant article numbers.
+    // Article list. Keep article numbers.
     match = text.match(
       /^(?:Relevant articles to review|Articles pertinents à examiner|Zu prüfende Artikel)\s*:\s*([\d,\s]+)$/i
     );
@@ -810,83 +917,104 @@ export function createGlobalTranslationManager({
       );
     }
 
-    // Arrow buttons.
-    const arrows = text.match(
-      /^(←\s*|\s*)(Previous|Précédent|Zurück|Next|Suivant|Weiter)(\s*→|\s*)$/i
+    // Pagination buttons with arrows.
+    match = text.match(
+      /^(←\s*)?(Previous|Précédent|Zurück|Next|Suivant|Weiter)(\s*→)?$/i
     );
 
-    if (arrows) {
-      const word = arrows[2];
-
-      const isNext = [
+    if (match) {
+      const nextWords = [
         "next",
         "suivant",
         "weiter"
-      ].includes(word.toLowerCase());
+      ];
 
-      const labels = isNext
-        ? ["Next", "Suivant", "Weiter"]
-        : ["Previous", "Précédent", "Zurück"];
+      const isNext = nextWords.includes(
+        match[2].toLowerCase()
+      );
 
-      const leftArrow = arrows[1].includes("←");
-      const rightArrow = arrows[3].includes("→");
+      const translated = isNext
+        ? ["Next", "Suivant", "Weiter"][lang]
+        : ["Previous", "Précédent", "Zurück"][lang];
 
       return (
-        (leftArrow ? "← " : "") +
-        labels[lang] +
-        (rightArrow ? " →" : "")
+        (match[1] ? "← " : "") +
+        translated +
+        (match[3] ? " →" : "")
       );
     }
 
-    // Sidebar fallback for an unresolved key.
+    // Legacy unresolved prototype key.
     if (text === "app.prototype") {
-      return ["Prototype", "Prototype", "Prototyp"][
-        lang
-      ];
+      return [
+        "Prototype",
+        "Prototype",
+        "Prototyp"
+      ][lang];
     }
 
     return null;
   }
 
   // -------------------------------------------
-  // TRANSLATE ANY RECOGNIZED UI TEXT
+  // RESOLVE TRANSLATION
   // -------------------------------------------
 
   function translateValue(value) {
     const source = normalize(value);
 
-    if (!source) return null;
+    if (!source) {
+      return null;
+    }
 
-    const dynamic = translateDynamic(source);
+    // 1. Dynamic values and counters.
+    const dynamic = translateDynamic(
+      source
+    );
 
     if (dynamic !== null) {
       return dynamic;
     }
 
-    const contentId = contentIndex.get(
+    // 2. Reviewed legal translations.
+    const legal = legalIndex.get(
       source
     );
 
-    if (contentId !== undefined) {
-      return CONTENT[contentId][
+    if (legal) {
+      return legal[
         getLanguageIndex()
       ];
     }
 
+    // 3. Small fixed interface terms.
+    const interfaceTerms = interfaceIndex.get(
+      source
+    );
+
+    if (interfaceTerms) {
+      return interfaceTerms[
+        getLanguageIndex()
+      ];
+    }
+
+    // 4. Existing locale dictionaries.
     const key = dictionaryIndex.get(
       source
     );
 
-    if (!key) return null;
+    if (!key) {
+      return null;
+    }
 
-    const result = t(key);
+    const translated = t(key);
 
-    if (result === key) {
+    if (translated === key) {
       missingTranslations.add(key);
       return null;
     }
 
-    return result;
+    return translated;
   }
 
   // -------------------------------------------
@@ -905,13 +1033,15 @@ export function createGlobalTranslationManager({
 
     if (
       !parent ||
-      !TEXT_TAGS.has(parent.tagName) ||
+      !TEXT_TAGS.has(
+        parent.tagName
+      ) ||
       isExcluded(parent)
     ) {
       return;
     }
 
-    // Option nodes are handled separately.
+    // Select options are handled separately.
     if (parent.tagName === "OPTION") {
       return;
     }
@@ -922,7 +1052,8 @@ export function createGlobalTranslationManager({
       return;
     }
 
-    const remembered = nodeSources.get(node);
+    const remembered =
+      nodeSources.get(node);
 
     const source =
       remembered &&
@@ -930,7 +1061,8 @@ export function createGlobalTranslationManager({
         ? remembered.source
         : current;
 
-    const result = translateValue(source);
+    const result =
+      translateValue(source);
 
     if (result === null) {
       return;
@@ -956,34 +1088,62 @@ export function createGlobalTranslationManager({
   }
 
   // -------------------------------------------
-  // NATIVE SELECT OPTIONS
+  // STATUS SELECT TRANSLATION
   // -------------------------------------------
 
+  function isStatusSelect(select) {
+    if (
+      !(select instanceof HTMLSelectElement) ||
+      isExcluded(select)
+    ) {
+      return false;
+    }
+
+    const values = Array.from(
+      select.options,
+      (option) => option.value
+    );
+
+    return (
+      values.length > 0 &&
+      values.every(
+        (value) =>
+          STATUS_CODES.includes(
+            value
+          )
+      )
+    );
+  }
+
   function translateStatusSelect(select) {
-    if (!isWorkflowStatusSelect(select)) {
+    if (!isStatusSelect(select)) {
       return;
     }
 
-    // Keep the existing selected status.
-    const selectedValue = select.value;
-    const selectedIndex = select.selectedIndex;
+    const selectedValue =
+      select.value;
+
+    const selectedIndex =
+      select.selectedIndex;
 
     for (const option of select.options) {
-      const translated = getTranslatedStatus(
+      const translation = getStatus(
         option.value
       );
 
       if (
-        translated &&
-        option.textContent !== translated
+        translation &&
+        option.textContent !== translation
       ) {
-        option.textContent = translated;
+        option.textContent =
+          translation;
       }
     }
 
-    // Option values remain unchanged.
-    // Preserve selection in all browsers.
-    if (select.value !== selectedValue) {
+    // Ensure no status is changed.
+    if (
+      select.value !== selectedValue
+    ) {
       select.value = selectedValue;
     }
 
@@ -991,22 +1151,23 @@ export function createGlobalTranslationManager({
       selectedValue === "" &&
       selectedIndex >= 0
     ) {
-      select.selectedIndex = selectedIndex;
+      select.selectedIndex =
+        selectedIndex;
     }
   }
 
   function translateSelectOptions() {
-    const selects = root.querySelectorAll(
+    for (const select of root.querySelectorAll(
       "select"
-    );
-
-    for (const select of selects) {
-      translateStatusSelect(select);
+    )) {
+      translateStatusSelect(
+        select
+      );
     }
   }
 
   // -------------------------------------------
-  // EXPLICIT DATA-I18N ATTRIBUTES
+  // EXPLICIT TRANSLATION ATTRIBUTES
   // -------------------------------------------
 
   function translateExplicit(element) {
@@ -1021,6 +1182,8 @@ export function createGlobalTranslationManager({
       "data-i18n"
     );
 
+    // Never replace complex element contents.
+    // That could remove form controls.
     if (
       key &&
       element.children.length === 0
@@ -1028,26 +1191,39 @@ export function createGlobalTranslationManager({
       const value = t(key);
 
       if (value !== key) {
-        if (element.textContent !== value) {
+        if (
+          element.textContent !== value
+        ) {
           element.textContent = value;
         }
       } else {
-        missingTranslations.add(key);
+        missingTranslations.add(
+          key
+        );
       }
     }
 
-    const placeholderKey = element.getAttribute(
-      "data-i18n-placeholder"
-    );
+    const placeholderKey =
+      element.getAttribute(
+        "data-i18n-placeholder"
+      );
 
     if (placeholderKey) {
-      const value = t(placeholderKey);
+      const value = t(
+        placeholderKey
+      );
 
       if (value !== placeholderKey) {
-        element.setAttribute(
-          "placeholder",
-          value
-        );
+        if (
+          element.getAttribute(
+            "placeholder"
+          ) !== value
+        ) {
+          element.setAttribute(
+            "placeholder",
+            value
+          );
+        }
       } else {
         missingTranslations.add(
           placeholderKey
@@ -1055,23 +1231,37 @@ export function createGlobalTranslationManager({
       }
     }
 
-    const titleKey = element.getAttribute(
-      "data-i18n-title"
-    );
+    const titleKey =
+      element.getAttribute(
+        "data-i18n-title"
+      );
 
     if (titleKey) {
-      const value = t(titleKey);
+      const value = t(
+        titleKey
+      );
 
       if (value !== titleKey) {
-        element.setAttribute("title", value);
+        if (
+          element.getAttribute(
+            "title"
+          ) !== value
+        ) {
+          element.setAttribute(
+            "title",
+            value
+          );
+        }
       } else {
-        missingTranslations.add(titleKey);
+        missingTranslations.add(
+          titleKey
+        );
       }
     }
   }
 
   // -------------------------------------------
-  // REFRESH
+  // REFRESH TRANSLATIONS
   // -------------------------------------------
 
   function refresh() {
@@ -1085,31 +1275,43 @@ export function createGlobalTranslationManager({
 
     refreshing = true;
 
+    // Temporarily stop observing our own
+    // translation-related DOM mutations.
+    if (observer) {
+      observer.disconnect();
+    }
+
     try {
-      // Translate controls first.
+      // Translate native status controls.
       translateSelectOptions();
 
-      const explicitSelector =
-        "[data-i18n], " +
-        "[data-i18n-placeholder], " +
-        "[data-i18n-title]";
+      const selector = [
+        "[data-i18n]",
+        "[data-i18n-placeholder]",
+        "[data-i18n-title]"
+      ].join(", ");
 
       const explicitElements = [];
 
-      if (root.matches(explicitSelector)) {
-        explicitElements.push(root);
+      if (root.matches(selector)) {
+        explicitElements.push(
+          root
+        );
       }
 
       explicitElements.push(
         ...root.querySelectorAll(
-          explicitSelector
+          selector
         )
       );
 
       for (const element of explicitElements) {
-        translateExplicit(element);
+        translateExplicit(
+          element
+        );
       }
 
+      // Translate recognized visible text.
       const walker = document.createTreeWalker(
         root,
         NodeFilter.SHOW_TEXT
@@ -1124,22 +1326,36 @@ export function createGlobalTranslationManager({
       }
 
       for (const node of nodes) {
-        translateTextNode(node);
+        translateTextNode(
+          node
+        );
       }
+
     } finally {
       refreshing = false;
+
+      if (
+        observer &&
+        !destroyed
+      ) {
+        observer.observe(root, {
+          childList: true,
+          characterData: true,
+          subtree: true
+        });
+      }
     }
   }
 
   // -------------------------------------------
-  // REFRESH QUEUE
+  // SCHEDULE REFRESH
   // -------------------------------------------
 
   function scheduleRefresh() {
     if (
-      refreshQueued ||
+      destroyed ||
       !started ||
-      destroyed
+      refreshQueued
     ) {
       return;
     }
@@ -1149,30 +1365,8 @@ export function createGlobalTranslationManager({
     queueMicrotask(() => {
       refreshQueued = false;
 
-      if (destroyed) return;
-
-      /*
-       * Disconnect while writing translations.
-       * This avoids observing our own changes
-       * and creating a refresh loop.
-       */
-      if (observer) {
-        observer.disconnect();
-      }
-
-      try {
+      if (!destroyed) {
         refresh();
-      } finally {
-        if (
-          observer &&
-          !destroyed
-        ) {
-          observer.observe(root, {
-            childList: true,
-            characterData: true,
-            subtree: true
-          });
-        }
       }
     });
   }
@@ -1184,20 +1378,33 @@ export function createGlobalTranslationManager({
   async function start() {
     if (destroyed) {
       throw new Error(
-        "Translation Manager has been destroyed."
+        "Translation Manager was destroyed."
       );
     }
 
-    if (started) return;
-
-    if (startPromise) {
-      return startPromise;
+    if (started) {
+      return;
     }
 
-    startPromise = (async () => {
-      await buildIndex();
+    if (starting) {
+      return starting;
+    }
 
-      if (destroyed || started) {
+    starting = (async () => {
+      // Core UI dictionaries must load.
+      await buildDictionaryIndex();
+
+      // Other indexes have no dependencies.
+      buildInterfaceIndex();
+
+      // Legal translations are optional
+      // for successful app initialization.
+      await buildLegalIndex();
+
+      if (
+        destroyed ||
+        started
+      ) {
         return;
       }
 
@@ -1207,15 +1414,12 @@ export function createGlobalTranslationManager({
         scheduleRefresh
       );
 
-      unsubscribe = onLanguageChange(
-        scheduleRefresh
-      );
+      unsubscribe =
+        onLanguageChange(
+          scheduleRefresh
+        );
 
-      /*
-       * First refresh is done before the
-       * observer starts, preventing an
-       * unnecessary mutation cycle.
-       */
+      // Initial translation before observing.
       refresh();
 
       observer.observe(root, {
@@ -1226,9 +1430,9 @@ export function createGlobalTranslationManager({
     })();
 
     try {
-      await startPromise;
+      await starting;
     } finally {
-      startPromise = null;
+      starting = null;
     }
   }
 
@@ -1243,11 +1447,13 @@ export function createGlobalTranslationManager({
   }
 
   // -------------------------------------------
-  // DESTROY
+  // CLEANUP
   // -------------------------------------------
 
   function destroy() {
-    if (destroyed) return;
+    if (destroyed) {
+      return;
+    }
 
     destroyed = true;
     started = false;
@@ -1263,7 +1469,8 @@ export function createGlobalTranslationManager({
     }
 
     dictionaryIndex.clear();
-    contentIndex.clear();
+    legalIndex.clear();
+    interfaceIndex.clear();
     missingTranslations.clear();
   }
 
