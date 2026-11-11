@@ -1,0 +1,146 @@
+
+{
+  "metadata": {
+    "name": "LexBridge Legal Content Translations",
+    "version": "0.1.0",
+    "defaultLanguage": "en",
+    "supportedLanguages": [
+      "en",
+      "fr",
+      "de"
+    ],
+    "jurisdiction": "CH",
+    "description": "Reviewed display translations for Swiss corporate workflow content. These translations do not determine legal applicability or replace professional legal review."
+  },
+  "corporate": {
+    "workflowSteps": {
+      "verifyCompanyRegistration": {
+        "title": {
+          "en": "Verify company registration",
+          "fr": "Vérifier l'inscription de la société",
+          "de": "Handelsregistereintrag der Gesellschaft prüfen"
+        },
+        "description": {
+          "en": "Check the company identity, legal form and current commercial register extract.",
+          "fr": "Vérifier l'identité de la société, sa forme juridique et son extrait actuel du registre du commerce.",
+          "de": "Identität und Rechtsform der Gesellschaft sowie den aktuellen Handelsregisterauszug prüfen."
+        }
+      },
+      "reviewArticles": {
+        "title": {
+          "en": "Review articles of association",
+          "fr": "Examiner les statuts de la société",
+          "de": "Statuten der Gesellschaft prüfen"
+        },
+        "description": {
+          "en": "Identify any relevant company-specific rules on corporate decisions and representation.",
+          "fr": "Identifier les règles statutaires pertinentes relatives aux décisions sociales et à la représentation.",
+          "de": "Relevante statutarische Bestimmungen zu Gesellschaftsbeschlüssen und zur Vertretung feststellen."
+        }
+      },
+      "identifyCompetentBody": {
+        "title": {
+          "en": "Identify the competent corporate body",
+          "fr": "Identifier l'organe social compétent",
+          "de": "Zuständiges Gesellschaftsorgan bestimmen"
+        },
+        "description": {
+          "en": "Determine who has authority to decide the proposed change.",
+          "fr": "Déterminer quel organe est compétent pour décider de la modification envisagée.",
+          "de": "Feststellen, welches Organ für den Beschluss über die geplante Änderung zuständig ist."
+        }
+      },
+      "reviewSupportingEvidence": {
+        "title": {
+          "en": "Review supporting evidence",
+          "fr": "Examiner les pièces justificatives",
+          "de": "Belege und Nachweise prüfen"
+        },
+        "description": {
+          "en": "Check the decision record and supporting documents appropriate to the change.",
+          "fr": "Vérifier le procès-verbal de décision et les pièces justificatives correspondant à la modification.",
+          "de": "Beschlussprotokoll und die für die Änderung erforderlichen Belege prüfen."
+        }
+      },
+      "checkCompanyRepresentation": {
+        "title": {
+          "en": "Check company representation",
+          "fr": "Vérifier la représentation de la société",
+          "de": "Vertretung der Gesellschaft prüfen"
+        },
+        "description": {
+          "en": "Verify continuing representation arrangements and relevant signing powers.",
+          "fr": "Vérifier les modalités de représentation en vigueur et les pouvoirs de signature correspondants.",
+          "de": "Die geltenden Vertretungsregelungen und die entsprechenden Zeichnungsberechtigungen prüfen."
+        }
+      }
+    },
+    "legalWarnings": {
+      "preliminaryWorkflow": {
+        "en": "This workflow is preliminary and does not constitute legal advice.",
+        "fr": "Cette procédure est préliminaire et ne constitue pas un avis juridique.",
+        "de": "Dieser Arbeitsablauf ist vorläufig und stellt keine Rechtsberatung dar."
+      },
+      "verifyCurrentLegislation": {
+        "en": "Check the current legislation and official cantonal registry instructions.",
+        "fr": "Vérifiez la législation en vigueur et les instructions officielles du registre du commerce cantonal.",
+        "de": "Prüfen Sie die geltenden Rechtsvorschriften und die offiziellen Anweisungen des kantonalen Handelsregisteramts."
+      },
+      "articlesAndFacts": {
+        "en": "The company's articles of association and the facts of the matter may change the procedure.",
+        "fr": "Les statuts de la société et les circonstances du dossier peuvent modifier la procédure applicable.",
+        "de": "Die Statuten der Gesellschaft und der konkrete Sachverhalt können den erforderlichen Ablauf verändern."
+      },
+      "noAutomaticFiling": {
+        "en": "No documents are automatically filed or legally approved.",
+        "fr": "Aucun document n'est automatiquement déposé ou juridiquement validé.",
+        "de": "Dokumente werden weder automatisch eingereicht noch rechtlich genehmigt."
+      },
+      "prototypeSourceMetadata": {
+        "en": "Legal source metadata for a prototype. Article applicability and current wording must be checked before legal use.",
+        "fr": "Métadonnées des sources juridiques destinées à un prototype. L'applicabilité des articles et leur teneur actuelle doivent être vérifiées avant toute utilisation juridique.",
+        "de": "Rechtsquellen-Metadaten für einen Prototyp. Die Anwendbarkeit und der aktuelle Wortlaut der Bestimmungen müssen vor einer rechtlichen Verwendung geprüft werden."
+      },
+      "editedMatterRequiresReview": {
+        "en": "Matter details were edited. Compatible checklist statuses were carried forward, but previously reviewed items must be rechecked against the updated facts.",
+        "fr": "Les informations du dossier ont été modifiées. Les statuts de vérification compatibles ont été conservés, mais les éléments précédemment examinés doivent être revérifiés à la lumière des nouvelles informations.",
+        "de": "Die Falldaten wurden geändert. Kompatible Prüfstatus wurden übernommen, bereits geprüfte Punkte müssen jedoch anhand der aktualisierten Angaben erneut überprüft werden."
+      }
+    },
+    "officialSources": {
+      "swissCodeOfObligations": {
+        "title": {
+          "en": "Swiss Code of Obligations",
+          "fr": "Code des obligations suisse",
+          "de": "Schweizerisches Obligationenrecht"
+        }
+      },
+      "commercialRegisterOrdinance": {
+        "title": {
+          "en": "Commercial Register Ordinance",
+          "fr": "Ordonnance sur le registre du commerce",
+          "de": "Handelsregisterverordnung"
+        }
+      },
+      "centralBusinessNameIndex": {
+        "title": {
+          "en": "Central Business Name Index",
+          "fr": "Index central des raisons de commerce",
+          "de": "Zentraler Firmenindex"
+        },
+        "description": {
+          "en": "Check company registration information and identify the competent commercial register.",
+          "fr": "Vérifier les données d'inscription de la société et identifier le registre du commerce compétent.",
+          "de": "Handelsregisterangaben der Gesellschaft prüfen und das zuständige Handelsregisteramt ermitteln."
+        }
+      }
+    },
+    "documentGenerator": {
+      "draftDisclaimer": {
+        "en": "Draft document only. The content must be reviewed and signed in accordance with the competent commercial registry's requirements.",
+        "fr": "Projet de document uniquement. Le contenu doit être vérifié et signé conformément aux exigences du registre du commerce compétent.",
+        "de": "Nur ein Dokumententwurf. Der Inhalt muss gemäss den Anforderungen des zuständigen Handelsregisteramts geprüft und unterzeichnet werden."
+      }
+    }
+  }
+}
