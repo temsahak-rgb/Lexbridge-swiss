@@ -2,15 +2,11 @@
 {
   "metadata": {
     "name": "LexBridge Legal Content Translations",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "defaultLanguage": "en",
-    "supportedLanguages": [
-      "en",
-      "fr",
-      "de"
-    ],
+    "supportedLanguages": ["en", "fr", "de"],
     "jurisdiction": "CH",
-    "description": "Reviewed display translations for Swiss corporate workflow content. These translations do not determine legal applicability or replace professional legal review."
+    "description": "Display translations for Swiss corporate workflows. Legal applicability and terminology require professional review before production use."
   },
   "corporate": {
     "workflowSteps": {
@@ -46,7 +42,7 @@
         },
         "description": {
           "en": "Determine who has authority to decide the proposed change.",
-          "fr": "Déterminer quel organe est compétent pour décider de la modification envisagée.",
+          "fr": "Déterminer quel organe für die geplante Änderung zuständig ist.",
           "de": "Feststellen, welches Organ für den Beschluss über die geplante Änderung zuständig ist."
         }
       },
@@ -73,6 +69,221 @@
           "fr": "Vérifier les modalités de représentation en vigueur et les pouvoirs de signature correspondants.",
           "de": "Die geltenden Vertretungsregelungen und die entsprechenden Zeichnungsberechtigungen prüfen."
         }
+      },
+      "prepareFiling": {
+        "title": {
+          "en": "Prepare commercial register application",
+          "fr": "Préparer la réquisition d'inscription au registre du commerce",
+          "de": "Handelsregisteranmeldung vorbereiten"
+        },
+        "description": {
+          "en": "Identify the competent registry and prepare an initial filing checklist.",
+          "fr": "Identifier le registre du commerce compétent et préparer une première liste de contrôle pour le dépôt.",
+          "de": "Das zuständige Handelsregisteramt ermitteln und eine erste Checkliste für die Anmeldung erstellen."
+        }
+      },
+      "humanReview": {
+        "title": {
+          "en": "Obtain legal review",
+          "fr": "Faire procéder à une vérification juridique",
+          "de": "Rechtliche Prüfung einholen"
+        },
+        "description": {
+          "en": "Have the proposed documents and filing requirements reviewed before submission.",
+          "fr": "Faire vérifier les documents envisagés et les exigences de dépôt avant leur soumission.",
+          "de": "Die vorgesehenen Dokumente und Anmeldeanforderungen vor der Einreichung überprüfen lassen."
+        }
+      },
+      "appointmentDecision": {
+        "title": {
+          "en": "Review appointment decision",
+          "fr": "Examiner la décision de nomination",
+          "de": "Ernennungsbeschluss prüfen"
+        },
+        "description": {
+          "en": "Check the decision record and whether the competent corporate body made the appointment.",
+          "fr": "Vérifier le procès-verbal et s'assurer que la nomination a été décidée par l'organe social compétent.",
+          "de": "Das Beschlussprotokoll prüfen und feststellen, ob die Ernennung durch das zuständige Gesellschaftsorgan erfolgt ist."
+        }
+      },
+      "acceptance": {
+        "title": {
+          "en": "Check acceptance of office",
+          "fr": "Vérifier l'acceptation de la fonction",
+          "de": "Annahme des Amtes prüfen"
+        },
+        "description": {
+          "en": "Identify whether and how acceptance of the appointment must be documented.",
+          "fr": "Déterminer si l'acceptation de la nomination doit être documentée et, le cas échéant, sous quelle forme.",
+          "de": "Feststellen, ob und in welcher Form die Annahme der Ernennung dokumentiert werden muss."
+        }
+      },
+      "identitySignature": {
+        "title": {
+          "en": "Check identity and signature documents",
+          "fr": "Vérifier les documents d'identité et de signature",
+          "de": "Identitäts- und Unterschriftsunterlagen prüfen"
+        },
+        "description": {
+          "en": "Determine identity and certified specimen-signature requirements where applicable.",
+          "fr": "Déterminer les exigences applicables en matière d'identification et de certification des spécimens de signature.",
+          "de": "Gegebenenfalls die Anforderungen an Identitätsnachweise und beglaubigte Unterschriftsmuster ermitteln."
+        }
+      },
+      "appointmentPowers": {
+        "title": {
+          "en": "Review associated signing authority",
+          "fr": "Examiner les pouvoirs de signature associés",
+          "de": "Zugehörige Zeichnungsberechtigung prüfen"
+        },
+        "description": {
+          "en": "Determine whether the appointment also changes the company's registered signing powers.",
+          "fr": "Déterminer si la nomination modifie également les pouvoirs de signature inscrits de la société.",
+          "de": "Feststellen, ob die Ernennung auch die eingetragenen Zeichnungsberechtigungen der Gesellschaft ändert."
+        }
+      },
+      "departureBasis": {
+        "title": {
+          "en": "Determine basis of departure",
+          "fr": "Déterminer le fondement du départ",
+          "de": "Grundlage des Ausscheidens feststellen"
+        },
+        "description": {
+          "en": "Distinguish resignation, removal and other forms of termination of office.",
+          "fr": "Distinguer la démission, la révocation et les autres formes de cessation des fonctions.",
+          "de": "Zwischen Rücktritt, Abberufung und anderen Formen der Beendigung des Amtes unterscheiden."
+        }
+      },
+      "departureEvidence": {
+        "title": {
+          "en": "Review departure documents",
+          "fr": "Examiner les documents relatifs au départ",
+          "de": "Unterlagen zum Ausscheiden prüfen"
+        },
+        "description": {
+          "en": "Check relevant resignation evidence or the decision of the competent corporate body.",
+          "fr": "Vérifier les justificatifs de démission ou la décision de l'organe social compétent.",
+          "de": "Die einschlägigen Rücktrittsnachweise oder den Beschluss des zuständigen Gesellschaftsorgans prüfen."
+        }
+      },
+      "cancelSignature": {
+        "title": {
+          "en": "Review cancellation of signing authority",
+          "fr": "Examiner la radiation des pouvoirs de signature",
+          "de": "Löschung der Zeichnungsberechtigung prüfen"
+        },
+        "description": {
+          "en": "Check whether registered signing rights must also be removed or amended.",
+          "fr": "Vérifier si les droits de signature inscrits doivent également être radiés ou modifiés.",
+          "de": "Prüfen, ob eingetragene Zeichnungsberechtigungen ebenfalls gelöscht oder geändert werden müssen."
+        }
+      },
+      "remainingManagement": {
+        "title": {
+          "en": "Check remaining management structure",
+          "fr": "Vérifier la structure de direction restante",
+          "de": "Verbleibende Leitungsstruktur prüfen"
+        },
+        "description": {
+          "en": "Verify continuing corporate organisation and representation following the departure.",
+          "fr": "Vérifier le maintien de l'organisation et de la représentation de la société après le départ.",
+          "de": "Die fortbestehende Organisation und Vertretung der Gesellschaft nach dem Ausscheiden prüfen."
+        }
+      },
+      "currentSignature": {
+        "title": {
+          "en": "Verify existing registered authority",
+          "fr": "Vérifier les pouvoirs inscrits existants",
+          "de": "Bestehende eingetragene Zeichnungsberechtigungen prüfen"
+        },
+        "description": {
+          "en": "Review existing registered signatories and their signing arrangements.",
+          "fr": "Examiner les signataires actuellement inscrits et leurs modalités de signature.",
+          "de": "Die derzeit eingetragenen Zeichnungsberechtigten und ihre Zeichnungsregelungen prüfen."
+        }
+      },
+      "signatureDecision": {
+        "title": {
+          "en": "Review authority for the change",
+          "fr": "Vérifier la compétence pour décider de la modification",
+          "de": "Zuständigkeit für die Änderung prüfen"
+        },
+        "description": {
+          "en": "Determine the competent corporate body and supporting decision required.",
+          "fr": "Identifier l'organe social compétent et la décision justificative requise.",
+          "de": "Das zuständige Gesellschaftsorgan und den erforderlichen Beschlussnachweis ermitteln."
+        }
+      },
+      "signatureMode": {
+        "title": {
+          "en": "Identify proposed signing mode",
+          "fr": "Déterminer le mode de signature envisagé",
+          "de": "Vorgesehene Zeichnungsart bestimmen"
+        },
+        "description": {
+          "en": "Check the intended individual or collective signing authority, as applicable.",
+          "fr": "Vérifier le pouvoir de signature individuelle ou collective envisagé, selon le cas.",
+          "de": "Die vorgesehene Einzel- oder Kollektivzeichnungsberechtigung prüfen."
+        }
+      },
+      "newSignatoryDocs": {
+        "title": {
+          "en": "Check new signatory documentation",
+          "fr": "Vérifier les documents du nouveau signataire",
+          "de": "Unterlagen neuer Zeichnungsberechtigter prüfen"
+        },
+        "description": {
+          "en": "Determine whether identification and signature certification are needed.",
+          "fr": "Déterminer si des justificatifs d'identité et une certification de signature sont nécessaires.",
+          "de": "Feststellen, ob Identitätsnachweise und eine Unterschriftsbeglaubigung erforderlich sind."
+        }
+      },
+      "saBoardStructure": {
+        "title": {
+          "en": "Check board structure",
+          "fr": "Vérifier la composition du conseil d'administration",
+          "de": "Verwaltungsratsstruktur prüfen"
+        },
+        "description": {
+          "en": "Review the board composition and internal responsibilities under the applicable corporate rules.",
+          "fr": "Examiner la composition du conseil d'administration et la répartition interne des responsabilités conformément aux règles applicables.",
+          "de": "Die Zusammensetzung des Verwaltungsrats und die interne Aufgabenverteilung nach den anwendbaren gesellschaftsrechtlichen Bestimmungen prüfen."
+        }
+      },
+      "sarlManagementStructure": {
+        "title": {
+          "en": "Check management arrangements",
+          "fr": "Vérifier les modalités de gestion",
+          "de": "Geschäftsführungsregelungen prüfen"
+        },
+        "description": {
+          "en": "Review the management structure, members' decision-making powers and articles of association.",
+          "fr": "Examiner la structure de gestion, les pouvoirs décisionnels des associés et les statuts de la société.",
+          "de": "Die Geschäftsführungsstruktur, die Entscheidungsbefugnisse der Gesellschafter und die Statuten prüfen."
+        }
+      }
+    },
+    "operations": {
+      "appoint": {
+        "title": {
+          "en": "Appointment of a director or manager",
+          "fr": "Nomination d'un administrateur ou d'un gérant",
+          "de": "Wahl oder Ernennung eines Verwaltungsratsmitglieds oder Geschäftsführers"
+        }
+      },
+      "remove": {
+        "title": {
+          "en": "Removal or resignation",
+          "fr": "Révocation ou démission",
+          "de": "Abberufung oder Rücktritt"
+        }
+      },
+      "signature": {
+        "title": {
+          "en": "Change of signing authority",
+          "fr": "Modification du pouvoir de signature",
+          "de": "Änderung der Zeichnungsberechtigung"
+        }
       }
     },
     "legalWarnings": {
@@ -95,6 +306,36 @@
         "en": "No documents are automatically filed or legally approved.",
         "fr": "Aucun document n'est automatiquement déposé ou juridiquement validé.",
         "de": "Dokumente werden weder automatisch eingereicht noch rechtlich genehmigt."
+      },
+      "appointmentManagementDistinction": {
+        "en": "Appointment to an operational management position is not necessarily appointment to a registered corporate body.",
+        "fr": "La nomination à une fonction de direction opérationnelle ne constitue pas nécessairement une nomination à un organe social inscrit au registre du commerce.",
+        "de": "Die Ernennung in eine operative Leitungsfunktion bedeutet nicht zwangsläufig die Bestellung in ein eingetragenes Gesellschaftsorgan."
+      },
+      "departureDifferentEvidence": {
+        "en": "Resignation and removal may require different supporting evidence.",
+        "fr": "La démission et la révocation peuvent nécessiter des pièces justificatives différentes.",
+        "de": "Rücktritt und Abberufung können unterschiedliche Nachweise erfordern."
+      },
+      "employmentOutOfScope": {
+        "en": "Changes to employment relationships are outside the scope of this workflow.",
+        "fr": "Les modifications des relations de travail ne sont pas couvertes par cette procédure.",
+        "de": "Änderungen von Arbeitsverhältnissen liegen ausserhalb des Anwendungsbereichs dieses Arbeitsablaufs."
+      },
+      "signatureChangeDistinction": {
+        "en": "A change in signing authority does not necessarily involve an appointment or removal from a corporate body.",
+        "fr": "Une modification du pouvoir de signature n'implique pas nécessairement une nomination ou une révocation au sein d'un organe social.",
+        "de": "Eine Änderung der Zeichnungsberechtigung ist nicht zwangsläufig mit der Ernennung oder Abberufung eines Gesellschaftsorgans verbunden."
+      },
+      "saElectionDistinction": {
+        "en": "Distinguish election of a board member from delegation of operational management.",
+        "fr": "Distinguer l'élection d'un membre du conseil d'administration de la délégation de la gestion opérationnelle.",
+        "de": "Zwischen der Wahl eines Verwaltungsratsmitglieds und der Delegation der operativen Geschäftsführung unterscheiden."
+      },
+      "sarlManagementDistinction": {
+        "en": "The applicable management arrangements may differ from those of a Swiss corporation.",
+        "fr": "Les modalités de gestion applicables peuvent différer de celles d'une société anonyme suisse.",
+        "de": "Die anwendbaren Geschäftsführungsregelungen können sich von denen einer schweizerischen Aktiengesellschaft unterscheiden."
       },
       "prototypeSourceMetadata": {
         "en": "Legal source metadata for a prototype. Article applicability and current wording must be checked before legal use.",
