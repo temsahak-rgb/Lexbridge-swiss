@@ -76,12 +76,10 @@ function getNestedValue(dictionary, key) {
 
   for (const part of parts) {
     if (
-      part === "__proto__" ||
-      part === "prototype" ||
-      part === "constructor"
-    ) {
-      return undefined;
-    }
+  part === "__proto__" ||
+  part === "constructor"
+) {
+  return undefined;
 
     if (
       current === null ||
