@@ -70,16 +70,18 @@ function saveLanguage(code) {
   }
 }
 
+
 function getNestedValue(dictionary, key) {
   const parts = key.split(".");
   let current = dictionary;
 
   for (const part of parts) {
     if (
-  part === "__proto__" ||
-  part === "constructor"
-) {
-  return undefined;
+      part === "__proto__" ||
+      part === "constructor"
+    ) {
+      return undefined;
+    }
 
     if (
       current === null ||
