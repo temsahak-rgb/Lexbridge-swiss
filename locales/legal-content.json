@@ -2,7 +2,7 @@
 {
   "metadata": {
     "name": "LexBridge Legal Content Translations",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "defaultLanguage": "en",
     "supportedLanguages": ["en", "fr", "de"],
     "jurisdiction": "CH",
@@ -42,7 +42,7 @@
         },
         "description": {
           "en": "Determine who has authority to decide the proposed change.",
-          "fr": "Déterminer quel organe für die geplante Änderung zuständig ist.",
+          "fr": "Déterminer quel organe est compétent pour décider de la modification envisagée.",
           "de": "Feststellen, welches Organ für den Beschluss über die geplante Änderung zuständig ist."
         }
       },
@@ -260,6 +260,156 @@
           "en": "Review the management structure, members' decision-making powers and articles of association.",
           "fr": "Examiner la structure de gestion, les pouvoirs décisionnels des associés et les statuts de la société.",
           "de": "Die Geschäftsführungsstruktur, die Entscheidungsbefugnisse der Gesellschafter und die Statuten prüfen."
+        }
+      }
+    },
+    "cantons": {
+      "VD": {
+        "steps": {
+          "vd-registry-instructions": {
+            "title": {
+              "en": "Review Vaud commercial register instructions",
+              "fr": "Examiner les instructions du registre du commerce vaudois",
+              "de": "Anweisungen des Handelsregisters des Kantons Waadt prüfen"
+            },
+            "description": {
+              "en": "Consult the current Vaud guidance for the company's legal form and requested change.",
+              "fr": "Consulter les directives vaudoises en vigueur concernant la forme juridique de la société et la modification demandée.",
+              "de": "Die geltenden Waadtländer Richtlinien zur Rechtsform der Gesellschaft und zur beantragten Änderung konsultieren."
+            }
+          },
+          "vd-requisition": {
+            "title": {
+              "en": "Prepare the modification application",
+              "fr": "Préparer la réquisition de modification",
+              "de": "Anmeldung der Änderung vorbereiten"
+            },
+            "description": {
+              "en": "Prepare a French-language réquisition de modification containing the relevant information and authorised signatures.",
+              "fr": "Préparer une réquisition de modification en français contenant les informations nécessaires et les signatures autorisées.",
+              "de": "Eine französischsprachige Änderungsanmeldung mit den erforderlichen Angaben und den berechtigten Unterschriften vorbereiten."
+            }
+          },
+          "vd-minutes": {
+            "title": {
+              "en": "Review the supporting decision record",
+              "fr": "Examiner le procès-verbal justificatif",
+              "de": "Nachweis des Beschlusses prüfen"
+            },
+            "description": {
+              "en": "Determine the applicable requirements for original minutes or an acceptable extract of the decision.",
+              "fr": "Déterminer les exigences applicables à la présentation du procès-verbal original ou d'un extrait admissible de la décision.",
+              "de": "Die Anforderungen an das Originalprotokoll oder einen zulässigen Beschlussauszug ermitteln."
+            }
+          },
+          "vd-filing-channel": {
+            "title": {
+              "en": "Verify permitted submission method",
+              "fr": "Vérifier les modes de dépôt autorisés",
+              "de": "Zulässigen Einreichungsweg prüfen"
+            },
+            "description": {
+              "en": "The Vaud registry does not accept ordinary email modification applications. Check the permitted counter or postal submission procedure.",
+              "fr": "Le registre du commerce vaudois n'accepte pas les réquisitions de modification envoyées par courriel ordinaire. Vérifier les modalités autorisées de dépôt au guichet ou par voie postale.",
+              "de": "Das Handelsregister des Kantons Waadt akzeptiert Änderungsanmeldungen nicht per gewöhnlicher E-Mail. Die zulässige Einreichung am Schalter oder per Post prüfen."
+            }
+          },
+          "vd-sa-signature": {
+            "title": {
+              "en": "Check signatures on the SA application",
+              "fr": "Vérifier les signatures sur la réquisition de la SA",
+              "de": "Unterschriften auf der Anmeldung der AG prüfen"
+            },
+            "description": {
+              "en": "Verify signatures according to the company's registered representation and the applicable cantonal instructions.",
+              "fr": "Vérifier les signatures conformément au mode de représentation inscrit de la société et aux instructions cantonales applicables.",
+              "de": "Die Unterschriften anhand der eingetragenen Vertretungsregelung der Gesellschaft und der geltenden kantonalen Anweisungen prüfen."
+            }
+          },
+          "vd-sarl-signature": {
+            "title": {
+              "en": "Check signatures on the Sàrl application",
+              "fr": "Vérifier les signatures sur la réquisition de la Sàrl",
+              "de": "Unterschriften auf der Anmeldung der GmbH prüfen"
+            },
+            "description": {
+              "en": "Verify signatures by the competent managers or authorised signatories under the applicable instructions.",
+              "fr": "Vérifier les signatures des gérants compétents ou des personnes autorisées à signer conformément aux instructions applicables.",
+              "de": "Die Unterschriften der zuständigen Geschäftsführer oder zeichnungsberechtigten Personen gemäss den geltenden Anweisungen prüfen."
+            }
+          },
+          "vd-appointment-evidence": {
+            "title": {
+              "en": "Check appointment evidence",
+              "fr": "Vérifier les justificatifs de nomination",
+              "de": "Ernennungsnachweise prüfen"
+            },
+            "description": {
+              "en": "Review the competent body's appointment decision, mandate acceptance and any supporting identity or signature documents.",
+              "fr": "Examiner la décision de nomination de l'organe compétent, l'acceptation du mandat et les éventuels justificatifs d'identité ou de signature.",
+              "de": "Den Ernennungsbeschluss des zuständigen Organs, die Annahme des Mandats sowie allfällige Identitäts- und Unterschriftsnachweise prüfen."
+            }
+          },
+          "vd-domicile": {
+            "title": {
+              "en": "Check Swiss domicile evidence",
+              "fr": "Vérifier les justificatifs de domicile en Suisse",
+              "de": "Nachweis des Wohnsitzes in der Schweiz prüfen"
+            },
+            "description": {
+              "en": "Determine whether a recent municipal domicile certificate is required for a person whose registration establishes the company's representation in Switzerland.",
+              "fr": "Déterminer si une attestation récente de domicile délivrée par la commune est requise pour une personne dont l'inscription permet d'assurer la représentation de la société en Suisse.",
+              "de": "Prüfen, ob für eine Person, durch deren Eintragung die Vertretung der Gesellschaft in der Schweiz gewährleistet wird, eine aktuelle kommunale Wohnsitzbescheinigung erforderlich ist."
+            }
+          },
+          "vd-departure-evidence": {
+            "title": {
+              "en": "Check departure or removal evidence",
+              "fr": "Vérifier les justificatifs de départ ou de révocation",
+              "de": "Nachweise für Ausscheiden oder Abberufung prüfen"
+            },
+            "description": {
+              "en": "Review the resignation letter or the relevant corporate decision record supporting removal from the register.",
+              "fr": "Examiner la lettre de démission ou la décision de l'organe social justifiant la radiation au registre.",
+              "de": "Das Rücktrittsschreiben oder den einschlägigen Gesellschaftsbeschluss als Nachweis für die Löschung im Handelsregister prüfen."
+            }
+          },
+          "vd-cancel-authority": {
+            "title": {
+              "en": "Verify cancellation of representation powers",
+              "fr": "Vérifier la radiation des pouvoirs de représentation",
+              "de": "Löschung der Vertretungsbefugnisse prüfen"
+            },
+            "description": {
+              "en": "Check whether the departing person's registered signing powers must also be cancelled.",
+              "fr": "Vérifier si les pouvoirs de signature inscrits de la personne sortante doivent également être radiés.",
+              "de": "Prüfen, ob die eingetragenen Zeichnungsberechtigungen der ausscheidenden Person ebenfalls gelöscht werden müssen."
+            }
+          },
+          "vd-signing-decision": {
+            "title": {
+              "en": "Review the signing-authority decision",
+              "fr": "Examiner la décision relative aux pouvoirs de signature",
+              "de": "Beschluss über die Zeichnungsberechtigung prüfen"
+            },
+            "description": {
+              "en": "Check the competent body's resolution and the precise signing mode to be registered.",
+              "fr": "Vérifier la décision de l'organe compétent et le mode de signature exact devant être inscrit.",
+              "de": "Den Beschluss des zuständigen Organs und die genau einzutragende Zeichnungsart prüfen."
+            }
+          },
+          "vd-signature-legalisation": {
+            "title": {
+              "en": "Review signature legalisation",
+              "fr": "Vérifier la légalisation de la signature",
+              "de": "Beglaubigung der Unterschrift prüfen"
+            },
+            "description": {
+              "en": "Check whether a new authorised signatory must have their specimen signature legally certified.",
+              "fr": "Vérifier si la signature spécimen d'une nouvelle personne autorisée à signer doit être légalisée.",
+              "de": "Prüfen, ob die Musterunterschrift einer neu zeichnungsberechtigten Person amtlich beglaubigt werden muss."
+            }
+          }
         }
       }
     },
