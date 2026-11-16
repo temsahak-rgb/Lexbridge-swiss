@@ -1,7 +1,7 @@
 
 /**
  * LexBridge — Internationalization Engine
- * Version: 0.1.0
+ * Version: 0.1.1 — additive legal translation API
  *
  * Interface languages: English, French, German.
  *
@@ -29,6 +29,9 @@ const STORAGE_KEY = "lexbridge.interfaceLanguage";
 
 const dictionaries = new Map();
 const listeners = new Set();
+
+let legalContent = null;
+let legalContentPromise = null;
 
 let currentLanguage = DEFAULT_LANGUAGE;
 
@@ -69,7 +72,6 @@ function saveLanguage(code) {
     // The app still works when storage is disabled.
   }
 }
-
 
 function getNestedValue(dictionary, key) {
   const parts = key.split(".");
@@ -161,6 +163,123 @@ export async function loadLanguage(code) {
 }
 
 /**
+ * Load the independent legal-display dictionary once.
+ * This function does not change workflow data or interface language.
+ * A failed request is retryable.
+ */
+export async function loadLegalContent() {
+  if (legalContent) return legalContent;
+  if (legalContentPromise) return legalContentPromise;
+
+  legalContentPromise = (async () => {
+    const url = new URL(
+      "../../locales/legal-content.json",
+      import.meta.url
+    );
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(
+        `Unable to load legal content (HTTP ${response.status}).`
+      );
+    }
+
+    const data = await response.json();
+
+    if (
+      !data ||
+      typeof data !== "object" ||
+      Array.isArray(data) ||
+      !data.corporate
+    ) {
+      throw new Error(
+        "Invalid legal-content.json structure."
+      );
+    }
+
+    legalContent = data;
+    return data;
+  })();
+
+  try {
+    return await legalContentPromise;
+  } finally {
+    legalContentPromise = null;
+  }
+}
+
+/**
+ * Translate a stable legal-content key without mutating legal data.
+ *
+ * Example:
+ * tLegal(
+ *   "corporate.workflowSteps.verifyCompanyRegistration.title"
+ * )
+ *
+ * If no entry is available, uses an explicitly
+ * supplied fallback (or the key).
+ */
+export function tLegal(
+  key,
+  variables = {},
+  fallbackText = ""
+) {
+  if (
+    typeof key !== "string" ||
+    !key.trim()
+  ) {
+    return String(fallbackText ?? "");
+  }
+
+  const parts = key.split(".");
+  let entry = legalContent;
+
+  for (const part of parts) {
+    if (
+      !part ||
+      part === "__proto__" ||
+      part === "constructor" ||
+      !entry ||
+      typeof entry !== "object" ||
+      !Object.hasOwn(entry, part)
+    ) {
+      entry = null;
+      break;
+    }
+
+    entry = entry[part];
+  }
+
+  if (
+    !entry ||
+    typeof entry !== "object" ||
+    Array.isArray(entry)
+  ) {
+    return interpolate(
+      String(fallbackText || key),
+      variables
+    );
+  }
+
+  const translated =
+    (
+      typeof entry[currentLanguage] === "string" &&
+      entry[currentLanguage]
+    ) ||
+    (
+      typeof entry.en === "string" &&
+      entry.en
+    ) ||
+    String(fallbackText || key);
+
+  return interpolate(
+    translated,
+    variables
+  );
+}
+
+/**
  * Initialize the interface language.
  *
  * English is the fallback language.
@@ -195,7 +314,8 @@ export async function initializeI18n() {
     currentLanguage = DEFAULT_LANGUAGE;
   }
 
-  document.documentElement.lang = currentLanguage;
+  document.documentElement.lang =
+    currentLanguage;
 
   notifyListeners();
 
@@ -209,10 +329,16 @@ export async function initializeI18n() {
  * t("navigation.dashboard")
  *
  * With variables:
- * t("workflow.progress", { completed: 3, total: 10 })
+ * t("workflow.progress", {
+ *   completed: 3,
+ *   total: 10
+ * })
  */
 export function t(key, variables = {}) {
-  if (typeof key !== "string" || !key.trim()) {
+  if (
+    typeof key !== "string" ||
+    !key.trim()
+  ) {
     return "";
   }
 
@@ -227,7 +353,10 @@ export function t(key, variables = {}) {
     getNestedValue(englishDictionary, key) ??
     key;
 
-  return interpolate(translation, variables);
+  return interpolate(
+    translation,
+    variables
+  );
 }
 
 /**
