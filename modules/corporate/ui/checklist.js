@@ -1,30 +1,88 @@
 
 /**
  * LexBridge — Corporate Checklist UI
- * Version: 0.3.0
+ * Version: 0.4.0
  *
- * Displays workflow steps and their review statuses.
+ * Key-based multilingual checklist.
  *
- * This file:
- * - Does not fetch legal data.
- * - Does not modify the legal workflow engine.
- * - Does not decide legal compliance.
- * - Notifies its parent when a step status changes.
+ * - English / French / German
+ * - Uses the central i18n engine
+ * - Uses legal-content.json for legal text
+ * - Preserves step IDs and status values
+ * - Does not modify workflow data
+ * - Does not decide legal compliance
+ * - Does not recreate controls on language change
+ *
+ * Compatible with checklist-pagination.js
+ * and report.js.
  */
 
 "use strict";
 
+import {
+  t,
+  tLegal,
+  loadLegalContent,
+  onLanguageChange
+} from "../../../js/core/i18n.js";
+
+// ---------------------------------------------
+// FIXED STATUS VALUES
+// ---------------------------------------------
+
 const STEP_STATUSES = Object.freeze([
-  { id: "pending", label: "Pending" },
-  { id: "completed", label: "Completed" },
-  { id: "blocked", label: "Blocked" },
-  { id: "not_applicable", label: "Not applicable" }
+  "pending",
+  "completed",
+  "blocked",
+  "not_applicable"
 ]);
 
-function element(tag, text, className) {
+// ---------------------------------------------
+// LEGACY WORKFLOW MIGRATION
+// ---------------------------------------------
+
+/**
+ * Existing workflows use English titles.
+ *
+ * Until workflows.json and cantonal files
+ * provide stable translation keys, map
+ * the five reviewed titles to their IDs.
+ *
+ * New workflows should provide titleKey
+ * and descriptionKey directly.
+ *
+ * Never use translated text as a step ID.
+ */
+
+const LEGACY_LEGAL_KEYS = Object.freeze({
+  "Verify company registration":
+    "corporate.workflowSteps.verifyCompanyRegistration",
+
+  "Review articles of association":
+    "corporate.workflowSteps.reviewArticles",
+
+  "Identify the competent corporate body":
+    "corporate.workflowSteps.identifyCompetentBody",
+
+  "Review supporting evidence":
+    "corporate.workflowSteps.reviewSupportingEvidence",
+
+  "Check company representation":
+    "corporate.workflowSteps.checkCompanyRepresentation"
+});
+
+// ---------------------------------------------
+// DOM HELPERS
+// ---------------------------------------------
+
+function element(
+  tag,
+  text = null,
+  className = ""
+) {
   const node = document.createElement(tag);
 
-  if (text !== undefined && text !== null) {
+  if (text !== null && text !== undefined) {
     node.textContent = String(text);
   }
 
@@ -35,14 +93,70 @@ function element(tag, text, className) {
   return node;
 }
 
+function normalizeText(value) {
+  return String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /**
- * Create a section showing the workflow checklist.
- *
- * @param {Object} workflow - Generated workflow object.
- * @param {Function} onChange - Callback(stepId, status).
- * @returns {HTMLElement}
+ * Resolve translation keys without
+ * changing the original step.
  */
-export function renderChecklist(workflow, onChange) {
+
+function getStepTranslationKeys(step) {
+  const legacyBase =
+    LEGACY_LEGAL_KEYS[
+      normalizeText(step.title)
+    ];
+
+  return {
+    titleKey:
+      step.titleKey ||
+      (legacyBase
+        ? legacyBase + ".title"
+        : null),
+
+    descriptionKey:
+      step.descriptionKey ||
+      (legacyBase
+        ? legacyBase + ".description"
+        : null)
+  };
+}
+
+function legalDisplay(
+  key,
+  fallback
+) {
+  if (!key) {
+    return String(fallback ?? "");
+  }
+
+  return tLegal(
+    key,
+    {},
+    String(fallback ?? "")
+  );
+}
+
+// ---------------------------------------------
+// CHECKLIST
+// ---------------------------------------------
+
+/**
+ * @param {Object} workflow
+ * @param {Function} onChange
+ *
+ * @returns {HTMLElement}
+ *
+ * Existing public API is unchanged.
+ */
+
+export function renderChecklist(
+  workflow,
+  onChange
+) {
   if (
     !workflow ||
     !Array.isArray(workflow.steps)
@@ -58,37 +172,61 @@ export function renderChecklist(workflow, onChange) {
     );
   }
 
-  const section = element("section", null, "card");
+  // -------------------------------------------
+  // ROOT ELEMENT
+  // -------------------------------------------
+
+  const section = element(
+    "section",
+    null,
+    "card"
+  );
+
   section.style.marginBottom = "18px";
 
-  const heading = element(
-    "h3",
-    "Workflow checklist"
-  );
+  const heading = element("h3");
 
   const introduction = element(
     "p",
-    "Track the review status of each step. " +
-    "Completing a step is not legal approval.",
+    "",
     "card-description"
   );
 
-  section.append(heading, introduction);
+  section.append(
+    heading,
+    introduction
+  );
+
+  const translationUpdates = [];
+
+  // -------------------------------------------
+  // EMPTY WORKFLOW
+  // -------------------------------------------
 
   if (workflow.steps.length === 0) {
-    section.appendChild(
-      element(
-        "p",
-        "No workflow steps are available.",
-        "card-description"
-      )
+    const emptyMessage = element(
+      "p",
+      "",
+      "card-description"
     );
 
-    return section;
+    section.appendChild(emptyMessage);
+
+    translationUpdates.push(() => {
+      emptyMessage.textContent =
+        t("workflow.noSteps");
+    });
   }
 
-  const list = element("div");
-  list.className = "workflow-step-list";
+  // -------------------------------------------
+  // CHECKLIST ITEMS
+  // -------------------------------------------
+
+  const list = element(
+    "div",
+    null,
+    "workflow-step-list"
+  );
 
   for (const step of workflow.steps) {
     const item = element(
@@ -98,32 +236,51 @@ export function renderChecklist(workflow, onChange) {
     );
 
     item.style.padding = "15px 0";
+
     item.style.borderBottom =
-      "1px solid var(--color-border)";
+      "1px solid var(--color-border, #dce3ea)";
 
-    item.dataset.stepId = step.id;
+    item.dataset.stepId = String(step.id);
 
-    const title = element(
-      "h4",
-      step.title
-    );
+    const translationKeys =
+      getStepTranslationKeys(step);
+
+    // -----------------------------------------
+    // TITLE
+    // -----------------------------------------
+
+    const title = element("h4");
 
     title.style.margin = "0 0 5px";
 
+    // -----------------------------------------
+    // DESCRIPTION
+    // -----------------------------------------
+
     const description = element(
       "p",
-      step.description || "",
+      "",
       "card-description"
     );
 
+    // -----------------------------------------
+    // REVIEW STATUS LABEL
+    // -----------------------------------------
+
     const label = element(
       "label",
-      "Review status",
+      "",
       "form-label"
     );
 
     label.style.display = "block";
-    label.style.marginTop = "10px";
+    label.style.marginTop = "12px";
+    label.style.marginBottom = "7px";
+    label.style.lineHeight = "1.5";
+
+    // -----------------------------------------
+    // STATUS SELECT
+    // -----------------------------------------
 
     const select = element(
       "select",
@@ -131,74 +288,244 @@ export function renderChecklist(workflow, onChange) {
       "form-control"
     );
 
+    select.style.display = "block";
+    select.style.width = "100%";
     select.style.maxWidth = "220px";
 
     const selectId =
       "step-status-" +
-      String(step.id).replace(/[^a-zA-Z0-9_-]/g, "-");
+      String(step.id).replace(
+        /[^a-zA-Z0-9_-]/g,
+        "-"
+      );
 
     select.id = selectId;
     label.htmlFor = selectId;
 
-    for (const status of STEP_STATUSES) {
-      const option = element(
-        "option",
-        status.label
-      );
+    const options = new Map();
 
-      option.value = status.id;
+    for (const status of STEP_STATUSES) {
+      const option = element("option");
+
+      option.value = status;
+
       select.appendChild(option);
+
+      options.set(status, option);
     }
 
-    select.value = STEP_STATUSES.some(
-      (status) => status.id === step.status
+    select.value = STEP_STATUSES.includes(
+      step.status
     )
       ? step.status
       : "pending";
 
-    select.addEventListener("change", () => {
-      onChange(step.id, select.value);
-    });
+    select.addEventListener(
+      "change",
+      () => {
+        // Only IDs are passed to the
+        // workflow engine.
+        onChange(
+          step.id,
+          select.value
+        );
+      }
+    );
 
-    const sourceIds = Array.isArray(step.sourceIds)
+    // -----------------------------------------
+    // SOURCE REFERENCES
+    // -----------------------------------------
+
+    const sourceIds = Array.isArray(
+      step.sourceIds
+    )
       ? step.sourceIds
       : [];
 
-    label.appendChild(select);
-    item.append(title, description, label);
+    let sources = null;
 
     if (sourceIds.length > 0) {
-      const sources = element(
-        "small",
-        "Source IDs: " + sourceIds.join(", ")
-      );
+      sources = element("small");
 
       sources.style.display = "block";
       sources.style.marginTop = "8px";
+
       sources.style.color =
         "var(--color-text-muted, #687587)";
 
+      // Source IDs remain unchanged.
       item.appendChild(sources);
     }
 
+    // -----------------------------------------
+    // OPTIONAL REVIEW STEP
+    // -----------------------------------------
+
+    let optional = null;
+
     if (step.required === false) {
-      const optional = element(
-        "small",
-        "Optional review step"
-      );
+      optional = element("small");
 
       optional.style.display = "block";
       optional.style.marginTop = "5px";
+
       optional.style.color =
         "var(--color-text-muted, #687587)";
+    }
 
+    // -----------------------------------------
+    // ASSEMBLE ITEM
+    // -----------------------------------------
+
+    item.prepend(
+      title,
+      description,
+      label,
+      select
+    );
+
+    if (optional) {
       item.appendChild(optional);
     }
 
     list.appendChild(item);
+
+    // -----------------------------------------
+    // ITEM TRANSLATION FUNCTION
+    // -----------------------------------------
+
+    translationUpdates.push(() => {
+      title.textContent = legalDisplay(
+        translationKeys.titleKey,
+        step.title
+      );
+
+      description.textContent = legalDisplay(
+        translationKeys.descriptionKey,
+        step.description || ""
+      );
+
+      label.textContent =
+        t("workflow.stepStatus");
+
+      for (const status of STEP_STATUSES) {
+        const option = options.get(status);
+
+        option.textContent = t(
+          "stepStatuses." + status
+        );
+      }
+
+      if (sources) {
+        sources.textContent =
+          t("workflow.sourceIds") +
+          ": " +
+          sourceIds.join(", ");
+      }
+
+      if (optional) {
+        optional.textContent =
+          t("workflow.optionalStep");
+      }
+    });
   }
 
   section.appendChild(list);
+
+  // -------------------------------------------
+  // CENTRALIZED TRANSLATION UPDATE
+  // -------------------------------------------
+
+  function updateTranslations() {
+    heading.textContent =
+      t("workflow.checklist");
+
+    introduction.textContent =
+      t("workflow.checklistDescription");
+
+    // Updating option text never changes
+    // select.value or checklist status.
+    for (const update of translationUpdates) {
+      update();
+    }
+  }
+
+  // Translate immediately.
+  updateTranslations();
+
+  // -------------------------------------------
+  // LANGUAGE CHANGE HANDLING
+  // -------------------------------------------
+
+  /*
+   * The pagination controller may remove
+   * and recreate checklist pages.
+   *
+   * A detached checklist unsubscribes
+   * when the next language change occurs.
+   *
+   * This prevents old pages from continuing
+   * to update indefinitely after navigation.
+   */
+
+  let unsubscribe = null;
+
+  unsubscribe = onLanguageChange(() => {
+    if (!section.isConnected) {
+      unsubscribe?.();
+      unsubscribe = null;
+      return;
+    }
+
+    updateTranslations();
+  });
+
+  // -------------------------------------------
+  // ASYNCHRONOUS LEGAL CONTENT
+  // -------------------------------------------
+
+  /*
+   * The interface can render before the
+   * legal translation file finishes loading.
+   *
+   * When loading completes, refresh only
+   * the displayed text.
+   *
+   * The workflow and controls are untouched.
+   */
+
+  loadLegalContent()
+    .then(() => {
+      if (section.isConnected) {
+        updateTranslations();
+      }
+    })
+    .catch((error) => {
+      console.warn(
+        "[LexBridge checklist] " +
+        "Legal translations unavailable:",
+        error
+      );
+    });
+
+  // -------------------------------------------
+  // OPTIONAL CLEANUP API
+  // -------------------------------------------
+
+  /**
+   * Allows future controllers to release
+   * the translation subscription explicitly.
+   *
+   * Does not change renderChecklist's
+   * existing return type.
+   */
+
+  section.destroyTranslations = () => {
+    if (unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
+  };
 
   return section;
 }
