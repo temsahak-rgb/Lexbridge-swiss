@@ -21,8 +21,6 @@
 
 import {
   t,
-  tLegal,
-  loadLegalContent,
   onLanguageChange
 } from "../../../js/core/i18n.js";
 
